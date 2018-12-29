@@ -19,6 +19,10 @@ struct texel_t {
 	texel_t() : r( 0 ), g( 0 ), b( 0 ) {}
 
 	float & operator[]( const int i ) { return ( ( ( float * ) this )[ i ] ); }
+	texel_t & operator+=( const texel_t & rhs ) { r += rhs.r; g += rhs.g; b += rhs.b; return *this; }
+	texel_t operator*( const float rhs ) const { texel_t tmp; tmp.r = r * rhs; tmp.g = g * rhs; tmp.b = b * rhs; return tmp; }
+	texel_t operator+( const texel_t & rhs ) const { texel_t tmp; tmp.r = r + rhs.r; tmp.g = g + rhs.g; tmp.b = b + rhs.b; return tmp; }
+	texel_t operator-( const texel_t & rhs ) const { texel_t tmp; tmp.r = r - rhs.r; tmp.g = g - rhs.g; tmp.b = b - rhs.b; return tmp; }
 
 	float r;
 	float g;
@@ -208,6 +212,36 @@ void SetMatrix( float * matrix, float fwdX, float fwdY, float fwdZ, float leftX,
 
 /*
 ====================================================
+ReconstructColorFromSH
+====================================================
+*/
+texel_t ReconstructColorFromSH( const legendrePolynomials_t & ylm, const float * dir ) {
+	texel_t color;
+
+	const float c1 = 0.429043f;
+	const float c2 = 0.511664f;
+	const float c3 = 0.743125f;
+	const float c4 = 0.886227f;
+	const float c5 = 0.247708f;
+
+	const float x = dir[ 0 ];
+	const float y = dir[ 1 ];
+	const float z = dir[ 2 ];
+
+	color = ylm.mL00 * c4
+		+ ( ylm.mL11 * x + ylm.mL1n1 * y + ylm.mL10 * z ) * 2.0f * c2
+		- ylm.mL20 * c5
+		+ ylm.mL20 * c3 * z * z
+		+ ylm.mL22 * c1 * ( x * x - y * y )
+		+ ( ylm.mL2n2 * x * y + ylm.mL21 * x * z + ylm.mL2n1 * y * z ) * 2.0f * c1;		
+
+	printf( "Dir = %.1f %.1f %.1f  Texel = ", dir[ 0 ], dir[ 1 ], dir[ 2 ] );
+	PrintTexel( color );
+	return color;
+}
+
+/*
+====================================================
 main
 ====================================================
 */
@@ -265,5 +299,38 @@ int main( int argc, char * argv[] ) {
 	}
 
 	PrintLegendrePolynomials( legendrePolynomials );
+
+	float dir[ 3 ];
+	dir[ 0 ] = 1;
+	dir[ 1 ] = 0;
+	dir[ 2 ] = 0;
+	ReconstructColorFromSH( legendrePolynomials, dir );
+
+	dir[ 0 ] = -1;
+	dir[ 1 ] = 0;
+	dir[ 2 ] = 0;
+	ReconstructColorFromSH( legendrePolynomials, dir );
+
+
+	dir[ 0 ] = 0;
+	dir[ 1 ] = 1;
+	dir[ 2 ] = 0;
+	ReconstructColorFromSH( legendrePolynomials, dir );
+
+	dir[ 0 ] = 0;
+	dir[ 1 ] = -1;
+	dir[ 2 ] = 0;
+	ReconstructColorFromSH( legendrePolynomials, dir );
+
+
+	dir[ 0 ] = 0;
+	dir[ 1 ] = 0;
+	dir[ 2 ] = 1;
+	ReconstructColorFromSH( legendrePolynomials, dir );
+
+	dir[ 0 ] = 0;
+	dir[ 1 ] = 0;
+	dir[ 2 ] = -1;
+	ReconstructColorFromSH( legendrePolynomials, dir );
 	return 0;
 }
