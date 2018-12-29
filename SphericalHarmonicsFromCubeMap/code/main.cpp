@@ -258,6 +258,7 @@ int main( int argc, char * argv[] ) {
 		for ( int x = 0; x < imageWidth; x++ ) {
 			const int idx = x + imageWidth * y;
 
+			// px
 			cubeImages[ 0 ][ idx ].r = 1;
 			cubeImages[ 0 ][ idx ].g = 0;
 			cubeImages[ 0 ][ idx ].b = 0;
@@ -266,6 +267,7 @@ int main( int argc, char * argv[] ) {
 			cubeImages[ 1 ][ idx ].g = 0;
 			cubeImages[ 1 ][ idx ].b = 0;
 
+			// py
 			cubeImages[ 2 ][ idx ].r = 0;
 			cubeImages[ 2 ][ idx ].g = 1;
 			cubeImages[ 2 ][ idx ].b = 0;
@@ -274,6 +276,7 @@ int main( int argc, char * argv[] ) {
 			cubeImages[ 3 ][ idx ].g = 0;
 			cubeImages[ 3 ][ idx ].b = 1;
 
+			// pz
 			cubeImages[ 4 ][ idx ].r = 1;
 			cubeImages[ 4 ][ idx ].g = 1;
 			cubeImages[ 4 ][ idx ].b = 1;
@@ -284,6 +287,7 @@ int main( int argc, char * argv[] ) {
 		}
 	}
 
+	// These are the orientation matrices for sitting at the center of the cube, and facing each texture
 	float matrices[ 6 ][ 9 ];
 	SetMatrix( matrices[ 0 ], 1, 0, 0,  0, 1, 0,  0, 0, 1 );
 	SetMatrix( matrices[ 1 ],-1, 0, 0,  0,-1, 0,  0, 0, 1 );
@@ -294,12 +298,18 @@ int main( int argc, char * argv[] ) {
 	SetMatrix( matrices[ 4 ], 0, 0, 1,  0, 1, 0, -1, 0, 0 );
 	SetMatrix( matrices[ 5 ], 0, 0,-1,  0, 1, 0,  1, 0, 0 );
 
+	// Calculate the spherical harmonic components for the cubemap
 	for ( int i = 0; i < 6; i++ ) {
 		LegendrePolynomialsForImage( cubeImages[ i ], imageWidth, matrices[ i ], legendrePolynomials );
 	}
 
 	PrintLegendrePolynomials( legendrePolynomials );
 
+	//
+	//	Test and print the color reconstruction of the spherical harmonics
+	//
+
+	// px
 	float dir[ 3 ];
 	dir[ 0 ] = 1;
 	dir[ 1 ] = 0;
@@ -311,7 +321,7 @@ int main( int argc, char * argv[] ) {
 	dir[ 2 ] = 0;
 	ReconstructColorFromSH( legendrePolynomials, dir );
 
-
+	// py
 	dir[ 0 ] = 0;
 	dir[ 1 ] = 1;
 	dir[ 2 ] = 0;
@@ -322,7 +332,7 @@ int main( int argc, char * argv[] ) {
 	dir[ 2 ] = 0;
 	ReconstructColorFromSH( legendrePolynomials, dir );
 
-
+	// pz
 	dir[ 0 ] = 0;
 	dir[ 1 ] = 0;
 	dir[ 2 ] = 1;
