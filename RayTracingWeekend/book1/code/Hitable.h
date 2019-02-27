@@ -7,32 +7,7 @@
 
 #include "Vector.h"
 #include "Material.h"
-//class Material;
-
-/*
-====================================================
-Ray
-====================================================
-*/
-class Ray {
-public:
-	Ray() : pt( 0 ), dir( 0 ) {}
-	Ray( const Vec3d & ptA, const Vec3d & ptB ) {
-		pt = ptA;
-		dir = ptB - ptA;
-		dir.Normalize();
-	}
-	const Ray & operator = ( const Ray & rhs ) {
-		pt = rhs.pt;
-		dir = rhs.dir;
-		return *this;
-	}
-
-	Vec3d PositionAtT( const float t ) const { return ( pt + dir * t ); }
-
-	Vec3d pt;
-	Vec3d dir;
-};
+#include "Ray.h"
 
 /*
 ====================================================
@@ -71,6 +46,25 @@ public:
 	Vec3d center;
 	float radius;
 	const Material * material;
+};
+
+/*
+====================================================
+HitableSphereDynamic
+====================================================
+*/
+class HitableSphereDynamic : public Hitable {
+public:
+	HitableSphereDynamic() { material = NULL; }
+	HitableSphereDynamic( const Vec3d & pt, const Vec3d & vel, const float r ) : center( pt ), velocity( vel ), radius( r ) { material = NULL; }
+	HitableSphereDynamic( const Vec3d & pt, const Vec3d & vel, const float r, const Material * mat ) : center( pt ), velocity( vel ), radius( r ), material( mat ) {}
+	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+
+	Vec3d center;
+	float radius;
+	const Material * material;
+
+	Vec3d velocity;
 };
 
 /*

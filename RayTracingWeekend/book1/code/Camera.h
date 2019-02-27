@@ -16,7 +16,7 @@ Camera
 */
 class Camera {
 public:
-	Camera( const float fovy, const float aspect, const float focalPlane, const float aperture ) {
+	Camera( const float fovy, const float aspect, const float focalPlane, const float aperture, const float exposure ) {
 		pos = Vec3d( 0, 0, 0 );
 		fwd = Vec3d( 1, 0, 0 );
 		up = Vec3d( 0, 0, 1 );
@@ -27,9 +27,9 @@ public:
 
 		m_focalPlane = focalPlane;
 		m_aperture = aperture;
+		m_exposure = exposure;
 	}
 
-	void GetRay( float u, float v, Ray & ray ) const;
 	void GetRay( float u, float v, Ray & ray, Random & rnd ) const;
 
 	Vec3d pos;
@@ -42,4 +42,5 @@ public:
 
 	float m_focalPlane;
 	float m_aperture;
+	float m_exposure;
 };

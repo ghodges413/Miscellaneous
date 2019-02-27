@@ -49,7 +49,7 @@ Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, Random & rnd, int re
 		return Vec3d( 0 );
 	}
 
-	return ColorBackground( ray.dir );
+	return ColorBackground( ray.m_direction );
 }
 
 /*
@@ -63,7 +63,7 @@ int main( int argc, char * argv[] ) {
 	const int nx = 512;
 	const int ny = 256;
 
-	Camera camera( 90, float( nx ) / float( ny ), 5.0f, 1.5f );
+	Camera camera( 90, float( nx ) / float( ny ), 5.0f, 1.5f, 1.0f );
 	Random random;
 
 	//
@@ -74,7 +74,8 @@ int main( int argc, char * argv[] ) {
 			return -1;
 		}
 
-		camera.pos = Vec3d( 9,-3, 2 );
+//		camera.pos = Vec3d( 9,-3, 2 );
+		camera.pos = Vec3d( 13,-3, 2 );
 		Vec3d lookat = Vec3d( 0, 0, 0 );
 		camera.fwd = ( lookat - camera.pos );
 		camera.fwd.Normalize();
@@ -82,13 +83,13 @@ int main( int argc, char * argv[] ) {
 		camera.left.Normalize();
 		camera.up = camera.fwd.Cross( camera.left );
 		camera.up.Normalize();
-		camera.m_focalPlane = ( lookat - camera.pos ).GetMagnitude();
-		camera.m_aperture = 0.2f;
-		camera.m_fovy = 60.0f;
+		camera.m_focalPlane = 10.0f;//( lookat - camera.pos ).GetMagnitude();
+		camera.m_aperture = 0;//0.2f;
+		camera.m_fovy = 40.0f;
 
 		const int n = 500;
 		Hitable ** list = new Hitable* [ n ];
-		list[ 0 ] = new HitableSphere( Vec3d( 5.0f, 0.0f, -500.0f ), 500.0f, new Lambertian( Vec3d( 0.5f, 0.5f, 0.5f ) ) );
+		list[ 0 ] = new HitableSphere( Vec3d( 5.0f, 0.0f, -1000.0f ), 1000.0f, new Lambertian( Vec3d( 0.5f, 0.5f, 0.5f ) ) );
 		HitableList * world = NULL;
 		{
 			int i = 1;
@@ -97,13 +98,16 @@ int main( int argc, char * argv[] ) {
 					float chooseMat = random.Get();
 					Vec3d center( a + 0.9f * random.Get(), b + 0.9f * random.Get(), 0.2f );
 					if ( ( center - Vec3d( 4.0f, 0.2f, 0.0f ) ).GetMagnitude() > 0.9f ) {
+						Material * material = NULL;
 						if ( chooseMat < 0.8f ) {
-							list[ i++ ] = new HitableSphere( center, 0.2f, new Lambertian( Vec3d( random.Get() * random.Get(), random.Get() * random.Get(), random.Get() * random.Get() ) ) );
+							material = new Lambertian( Vec3d( random.Get() * random.Get(), random.Get() * random.Get(), random.Get() * random.Get() ) );
 						} else if ( chooseMat < 0.95f ) {
-							list[ i++ ] = new HitableSphere( center, 0.2f, new Metal( Vec3d( 0.5f * ( 1.0f + random.Get() ), 0.5f * ( 1.0f + random.Get() ), 0.5f * ( 1.0f + random.Get() ) ), 0.5f * random.Get() ) );
+							material = new Metal( Vec3d( 0.5f * ( 1.0f + random.Get() ), 0.5f * ( 1.0f + random.Get() ), 0.5f * ( 1.0f + random.Get() ) ), 0.5f * random.Get() );
 						} else {
-							list[ i++ ] = new HitableSphere( center, 0.2f, new Dielectric( 1.5f ) );
+							material = new Dielectric( 1.5f );
 						}
+
+						list[ i++ ] = new HitableSphereDynamic( center, Vec3d( 0.0f, 0.0f, random.Get() * 0.5f ), 0.2f, material );
 					}
 				}
 			}
@@ -118,7 +122,7 @@ int main( int argc, char * argv[] ) {
 		WriteFileStream( strBuffer );
 		for ( int j = ny - 1; j >= 0; j-- ) {
 			for ( int i = 0; i < nx; i++ ) {
-				const int ns = 64;
+				const int ns = 64;//64;
 				Vec3d colorSum( 0, 0, 0 );
 				for ( int s = 0; s < ns; s++ ) {
 					float u = ( ( float( i ) + random.Get() ) / float( nx ) );

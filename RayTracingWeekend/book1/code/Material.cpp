@@ -14,7 +14,7 @@ Lambertian::Scatter
 */
 bool Lambertian::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
 	Vec3d target = record.point + record.normal + rnd.RandomInUnitSphere();
-	scattered = Ray( record.point, target );
+	scattered = Ray( record.point, target, ray.m_time );
 	attenuation = m_albedo;
 	return true;
 }
@@ -35,10 +35,10 @@ Metal::Scatter
 ====================================================
 */
 bool Metal::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
-	Vec3d reflected = Reflect( ray.dir, record.normal );
-	scattered = Ray( record.point, record.point + reflected + m_fuzz * rnd.RandomInUnitSphere() );
+	Vec3d reflected = Reflect( ray.m_direction, record.normal );
+	scattered = Ray( record.point, record.point + reflected + m_fuzz * rnd.RandomInUnitSphere(), ray.m_time );
 	attenuation = m_albedo;
-	return ( scattered.dir.DotProduct( record.normal ) > 0.0f );
+	return ( scattered.m_direction.DotProduct( record.normal ) > 0.0f );
 }
 
 float Schlick( float cosine, float indexOfRefraction ) {
@@ -67,7 +67,7 @@ Dielectric::Scatter
 */
 bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
 	Vec3d outwardNormal;
-	Vec3d reflected = Reflect( ray.dir, record.normal );
+	Vec3d reflected = Reflect( ray.m_direction, record.normal );
 
 	float ni_over_nt;
 	attenuation = Vec3d( 1.0f, 1.0f, 1.0f );
@@ -75,24 +75,27 @@ bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & a
 	Vec3d refracted;
 	float reflect_prob;
 	float cosine;
-	if ( ray.dir.DotProduct( record.normal ) > 0.0f ) {
+	if ( ray.m_direction.DotProduct( record.normal ) > 0.0f ) {
 		outwardNormal = record.normal * -1.0f;
 		ni_over_nt = m_indexOfRefraction;
-		cosine = m_indexOfRefraction * ray.dir.DotProduct( record.normal ) / ray.dir.GetMagnitude();
+		cosine = m_indexOfRefraction * ray.m_direction.DotProduct( record.normal ) / ray.m_direction.GetMagnitude();
 	} else {
 		outwardNormal = record.normal;
 		ni_over_nt = 1.0f / m_indexOfRefraction;
-		cosine = -ray.dir.DotProduct( record.normal ) / ray.dir.GetMagnitude();
+		cosine = -ray.m_direction.DotProduct( record.normal ) / ray.m_direction.GetMagnitude();
 	}
 
-	if ( Refract( ray.dir, outwardNormal, ni_over_nt, refracted ) ) {
+	if ( Refract( ray.m_direction, outwardNormal, ni_over_nt, refracted ) ) {
+		reflect_prob = Schlick( cosine, m_indexOfRefraction );
+	} else {
+		scattered = Ray( record.point, record.point + refracted, ray.m_time );
 		reflect_prob = 1.0f;
 	}
 
 	if ( rnd.Get() < reflect_prob ) {
-		scattered = Ray( record.point, record.point + reflected );
+		scattered = Ray( record.point, record.point + reflected, ray.m_time );
 	} else {
-		scattered = Ray( record.point, record.point + refracted );
+		scattered = Ray( record.point, record.point + refracted, ray.m_time );
 	}
 
 	return true;
