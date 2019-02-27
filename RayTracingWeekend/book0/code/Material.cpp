@@ -86,6 +86,9 @@ bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & a
 	}
 
 	if ( Refract( ray.dir, outwardNormal, ni_over_nt, refracted ) ) {
+		reflect_prob = Schlick( cosine, m_indexOfRefraction );
+	} else {
+		scattered = Ray( record.point, record.point + refracted );
 		reflect_prob = 1.0f;
 	}
 
