@@ -14,20 +14,20 @@ Ray
 */
 class Ray {
 public:
-	Ray() : pt( 0 ), dir( 0 ) {}
+	Ray() : m_point( 0 ), m_direction( 0 ) {}
 	Ray( const Vec3d & ptA, const Vec3d & ptB ) {
-		pt = ptA;
-		dir = ptB - ptA;
-		dir.Normalize();
+		m_point = ptA;
+		m_direction = ptB - ptA;
+		m_direction.Normalize();
 	}
 	const Ray & operator = ( const Ray & rhs ) {
-		pt = rhs.pt;
-		dir = rhs.dir;
+		m_point = rhs.m_point;
+		m_direction = rhs.m_direction;
 		return *this;
 	}
 
-	Vec3d PositionAtT( const float t ) const { return ( pt + dir * t ); }
+	Vec3d PositionAtT( const float t ) const { return ( m_point + m_direction * t ); }
 
-	Vec3d pt;
-	Vec3d dir;
+	Vec3d m_point;
+	Vec3d m_direction;
 };
