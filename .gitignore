@@ -6,6 +6,8 @@
 *.lo
 *.o
 *.obj
+*.iobj
+*.ipdb
 
 # Precompiled Headers
 *.gch
@@ -40,4 +42,5 @@
 *.suo
 *.idb
 *.log
+*.filters
 Browse.VC.*
