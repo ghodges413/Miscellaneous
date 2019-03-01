@@ -117,6 +117,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\code\AABB.cpp" />
     <ClCompile Include="..\code\Camera.cpp" />
     <ClCompile Include="..\code\Fileio.cpp" />
     <ClCompile Include="..\code\Hitable.cpp" />
@@ -126,6 +127,7 @@
     <ClCompile Include="..\code\Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\code\AABB.h" />
     <ClInclude Include="..\code\Camera.h" />
     <ClInclude Include="..\code\Fileio.h" />
     <ClInclude Include="..\code\Hitable.h" />

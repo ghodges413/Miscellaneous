@@ -8,6 +8,7 @@
 #include "Vector.h"
 #include "Material.h"
 #include "Ray.h"
+#include "AABB.h"
 
 /*
 ====================================================
@@ -29,6 +30,7 @@ Hitable
 class Hitable {
 public:
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const = 0;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const = 0;
 };
 
 /*
@@ -42,6 +44,7 @@ public:
 	HitableSphere( const Vec3d & pt, const float r ) : center( pt ), radius( r ) { material = NULL; }
 	HitableSphere( const Vec3d & pt, const float r, const Material * mat ) : center( pt ), radius( r ), material( mat ) {}
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override;
 
 	Vec3d center;
 	float radius;
@@ -59,6 +62,7 @@ public:
 	HitableSphereDynamic( const Vec3d & pt, const Vec3d & vel, const float r ) : center( pt ), velocity( vel ), radius( r ) { material = NULL; }
 	HitableSphereDynamic( const Vec3d & pt, const Vec3d & vel, const float r, const Material * mat ) : center( pt ), velocity( vel ), radius( r ), material( mat ) {}
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override;
 
 	Vec3d center;
 	float radius;
@@ -78,6 +82,7 @@ public:
 	HitablePlane( const Vec3d & pt, const Vec3d & norm ) : point( pt ), normal( norm ) { material = NULL; }
 	HitablePlane( const Vec3d & pt, const Vec3d & norm, const Material * mat ) : point( pt ), normal( norm ), material( mat ) {}
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override;
 
 	Vec3d point;
 	Vec3d normal;
@@ -94,7 +99,25 @@ public:
 	HitableList() {}
 	HitableList( Hitable ** l, int n ) { list = l; num = n; }
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override;
 
 	Hitable ** list;
 	int num;
+};
+
+/*
+====================================================
+BoundingVolumeHierarchyNode
+====================================================
+*/
+class BoundingVolumeHierarchyNode : public Hitable {
+public:
+	BoundingVolumeHierarchyNode() : m_left( NULL ), m_right( NULL ) {}
+	BoundingVolumeHierarchyNode( Hitable ** l, int n, float t0, float t1, Random & rnd );
+	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override;
+
+	Hitable * m_left;
+	Hitable * m_right;
+	AABB m_bounds;
 };
