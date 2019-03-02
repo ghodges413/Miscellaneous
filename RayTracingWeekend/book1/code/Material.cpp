@@ -6,6 +6,7 @@
 #include "Material.h"
 #include "Hitable.h"
 #include "Random.h"
+#include "Texture.h"
 
 /*
 ====================================================
@@ -15,7 +16,7 @@ Lambertian::Scatter
 bool Lambertian::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
 	Vec3d target = record.point + record.normal + rnd.RandomInUnitSphere();
 	scattered = Ray( record.point, target, ray.m_time );
-	attenuation = m_albedo;
+	attenuation = m_albedo->Sample( record.point.x, record.point.y, record.point );
 	return true;
 }
 

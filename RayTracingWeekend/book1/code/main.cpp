@@ -9,6 +9,7 @@
 #include "Hitable.h"
 #include "Random.h"
 #include "Material.h"
+#include "Texture.h"
 #include "Camera.h"
 
 /*
@@ -152,10 +153,10 @@ int main( int argc, char * argv[] ) {
 #endif
 
 	//
-	//	Chapter 2 - BVH
+	//	Chapter 2/3 - BVH and checkered texture
 	//
 	{
-		if ( !OpenFileWriteStream( "outputImages/bvh.ppm" ) ) {
+		if ( !OpenFileWriteStream( "outputImages/checker.ppm" ) ) {
 			return -1;
 		}
 
@@ -173,7 +174,7 @@ int main( int argc, char * argv[] ) {
 
 		const int n = 500;
 		Hitable ** list = new Hitable* [ n ];
-		list[ 0 ] = new HitableSphere( Vec3d( 5.0f, 0.0f, -1000.0f ), 1000.0f, new Lambertian( Vec3d( 0.5f, 0.5f, 0.5f ) ) );
+		list[ 0 ] = new HitableSphere( Vec3d( 5.0f, 0.0f, -1000.0f ), 1000.0f, new Lambertian( new TextureChecker( Vec3d( 0.9f, 0.9f, 0.9f ), Vec3d( 0.2f, 0.3f, 0.1f ) ) ) );
 		BoundingVolumeHierarchyNode * world = NULL;
 		{
 			int i = 1;
@@ -184,7 +185,7 @@ int main( int argc, char * argv[] ) {
 					if ( ( center - Vec3d( 4.0f, 0.2f, 0.0f ) ).GetMagnitude() > 0.9f ) {
 						Material * material = NULL;
 						if ( chooseMat < 0.8f ) {
-							material = new Lambertian( Vec3d( random.Get() * random.Get(), random.Get() * random.Get(), random.Get() * random.Get() ) );
+							material = new Lambertian( new TextureConstant( Vec3d( random.Get() * random.Get(), random.Get() * random.Get(), random.Get() * random.Get() ) ) );
 						} else if ( chooseMat < 0.95f ) {
 							material = new Metal( Vec3d( 0.5f * ( 1.0f + random.Get() ), 0.5f * ( 1.0f + random.Get() ), 0.5f * ( 1.0f + random.Get() ) ), 0.5f * random.Get() );
 						} else {
@@ -197,7 +198,7 @@ int main( int argc, char * argv[] ) {
 			}
 
 			list[ i++ ] = new HitableSphere( Vec3d( 0, 0, 1 ), 1.0f, new Dielectric( 1.5f ) );
-			list[ i++ ] = new HitableSphere( Vec3d( -4, 0, 1 ), 1.0f, new Lambertian( Vec3d( 0.4f, 0.2f, 0.1f ) ) );
+			list[ i++ ] = new HitableSphere( Vec3d( -4, 0, 1 ), 1.0f, new Lambertian( new TextureConstant( Vec3d( 0.4f, 0.2f, 0.1f ) ) ) );
 			list[ i++ ] = new HitableSphere( Vec3d( 4, 0, 1 ), 1.0f, new Metal( Vec3d( 0.7f, 0.6f, 0.5f ), 0.0f ) );
 
 			world = new BoundingVolumeHierarchyNode( list, i, 0.0f, 1.0f, random );

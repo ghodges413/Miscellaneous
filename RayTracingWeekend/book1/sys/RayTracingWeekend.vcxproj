@@ -124,6 +124,7 @@
     <ClCompile Include="..\code\main.cpp" />
     <ClCompile Include="..\code\Material.cpp" />
     <ClCompile Include="..\code\Random.cpp" />
+    <ClCompile Include="..\code\Texture.cpp" />
     <ClCompile Include="..\code\Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +135,7 @@
     <ClInclude Include="..\code\Material.h" />
     <ClInclude Include="..\code\Random.h" />
     <ClInclude Include="..\code\Ray.h" />
+    <ClInclude Include="..\code\Texture.h" />
     <ClInclude Include="..\code\Vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

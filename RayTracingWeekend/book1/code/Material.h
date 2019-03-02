@@ -9,6 +9,7 @@
 class Ray;
 struct hitRecord_t;
 class Random;
+class Texture;
 
 /*
 ====================================================
@@ -27,11 +28,11 @@ Lambertian
 */
 class Lambertian : public Material {
 public:
-	Lambertian( const Vec3d & albedo ) : m_albedo( albedo ) {}
+	Lambertian( const Texture * albedo ) : m_albedo( albedo ) {}
 	virtual bool Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const override;
 
 private:
-	Vec3d m_albedo;
+	const Texture * m_albedo;
 };
 
 /*
