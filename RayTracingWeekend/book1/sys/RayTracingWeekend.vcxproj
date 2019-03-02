@@ -123,6 +123,7 @@
     <ClCompile Include="..\code\Hitable.cpp" />
     <ClCompile Include="..\code\main.cpp" />
     <ClCompile Include="..\code\Material.cpp" />
+    <ClCompile Include="..\code\Perlin.cpp" />
     <ClCompile Include="..\code\Random.cpp" />
     <ClCompile Include="..\code\Texture.cpp" />
     <ClCompile Include="..\code\Vector.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="..\code\Fileio.h" />
     <ClInclude Include="..\code\Hitable.h" />
     <ClInclude Include="..\code\Material.h" />
+    <ClInclude Include="..\code\Perlin.h" />
     <ClInclude Include="..\code\Random.h" />
     <ClInclude Include="..\code\Ray.h" />
     <ClInclude Include="..\code\Texture.h" />

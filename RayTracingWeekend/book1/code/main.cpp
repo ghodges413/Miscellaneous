@@ -11,6 +11,7 @@
 #include "Material.h"
 #include "Texture.h"
 #include "Camera.h"
+#include "Perlin.h"
 
 /*
 ====================================================
@@ -66,6 +67,8 @@ int main( int argc, char * argv[] ) {
 
 	Camera camera( 90, float( nx ) / float( ny ), 5.0f, 1.5f, 1.0f );
 	Random random;
+
+	Perlin::Initialize( random );
 #if 0
 	//
 	//	Chapter 1 - motion blur
@@ -153,7 +156,7 @@ int main( int argc, char * argv[] ) {
 #endif
 
 	//
-	//	Chapter 2/3 - BVH and checkered texture
+	//	Chapter 2/3/4 - BVH, checker texture, and perlin noise
 	//
 	{
 		if ( !OpenFileWriteStream( "outputImages/checker.ppm" ) ) {
@@ -200,6 +203,7 @@ int main( int argc, char * argv[] ) {
 			list[ i++ ] = new HitableSphere( Vec3d( 0, 0, 1 ), 1.0f, new Dielectric( 1.5f ) );
 			list[ i++ ] = new HitableSphere( Vec3d( -4, 0, 1 ), 1.0f, new Lambertian( new TextureConstant( Vec3d( 0.4f, 0.2f, 0.1f ) ) ) );
 			list[ i++ ] = new HitableSphere( Vec3d( 4, 0, 1 ), 1.0f, new Metal( Vec3d( 0.7f, 0.6f, 0.5f ), 0.0f ) );
+			list[ i++ ] = new HitableSphere( Vec3d( 4, -3, 1 ), 1.0f, new Lambertian( new TextureNoise() ) );
 
 			world = new BoundingVolumeHierarchyNode( list, i, 0.0f, 1.0f, random );
 		}

@@ -49,3 +49,15 @@ public:
 	Vec3d m_colorA;
 	Vec3d m_colorB;
 };
+
+/*
+====================================================
+TextureNoise
+====================================================
+*/
+class TextureNoise : public Texture {
+public:
+	TextureNoise() {}
+
+	virtual Vec3d Sample( float u, float v, const Vec3d & p ) const override;
+};

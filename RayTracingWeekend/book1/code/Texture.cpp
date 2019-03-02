@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Texture.h"
+#include "Perlin.h"
 #include <math.h>
 
 /*
@@ -21,3 +22,13 @@ Vec3d TextureChecker::Sample( float u, float v, const Vec3d & p ) const {
 	}
 	return color;
 }
+
+/*
+====================================================
+TextureChecker::Sample
+====================================================
+*/
+Vec3d TextureNoise::Sample( float u, float v, const Vec3d & p ) const {
+	return Vec3d( 1.0f ) * Perlin::Noise( p );
+}
+
