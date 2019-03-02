@@ -29,6 +29,8 @@ TextureChecker::Sample
 ====================================================
 */
 Vec3d TextureNoise::Sample( float u, float v, const Vec3d & p ) const {
-	return Vec3d( 1.0f ) * Perlin::Noise( p );
+//	return Vec3d( 1.0f ) * Perlin::Noise( p );
+//	return Vec3d( 1.0f ) * Perlin::Noise2( p );
+	return Vec3d( 1.0f ) * 0.5f * ( 1.0f + sinf( m_scale * p.z + 10.0f * Perlin::Turbulence( m_scale * p ) ) );
 }
 

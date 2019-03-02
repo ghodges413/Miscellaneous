@@ -57,7 +57,9 @@ TextureNoise
 */
 class TextureNoise : public Texture {
 public:
-	TextureNoise() {}
+	TextureNoise() : m_scale( 0.5f ) {}
 
 	virtual Vec3d Sample( float u, float v, const Vec3d & p ) const override;
+
+	float m_scale;
 };
