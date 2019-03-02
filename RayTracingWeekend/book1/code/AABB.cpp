@@ -16,9 +16,23 @@ AABB::AABB
 */
 AABB::AABB( const AABB & boundsA, const AABB & boundsB ) {
 	for ( int axis = 0; axis < 3; axis++ ) {
-		m_min[ axis ] = ffmin( boundsA.m_min[ axis ], boundsB.m_max[ axis ] );
+		m_min[ axis ] = ffmin( boundsA.m_min[ axis ], boundsB.m_min[ axis ] );
 		m_max[ axis ] = ffmax( boundsA.m_max[ axis ], boundsB.m_max[ axis ] );
 	}
+	assert( IsValid() );
+}
+
+/*
+====================================================
+AABB::Expand
+====================================================
+*/
+void AABB::Expand( const AABB & bounds ) {
+	for ( int axis = 0; axis < 3; axis++ ) {
+		m_min[ axis ] = ffmin( m_min[ axis ], bounds.m_min[ axis ] );
+		m_max[ axis ] = ffmax( m_max[ axis ], bounds.m_max[ axis ] );
+	}
+	assert( IsValid() );
 }
 
 /*
@@ -27,6 +41,28 @@ AABB::Hit
 ====================================================
 */
 bool AABB::Hit( const Ray & ray, float tmin, float tmax ) const {
+	assert( IsValid() );
+
+#if 1
+	for ( int axis = 0; axis < 3; axis++ ) {
+		float t0 = ffmin(	( m_min[ axis ] - ray.m_point[ axis ] ) / ray.m_direction[ axis ],
+							( m_max[ axis ] - ray.m_point[ axis ] ) / ray.m_direction[ axis ] );
+		float t1 = ffmax(	( m_min[ axis ] - ray.m_point[ axis ] ) / ray.m_direction[ axis ],
+							( m_max[ axis ] - ray.m_point[ axis ] ) / ray.m_direction[ axis ] );
+
+		tmin = ffmax( t0, tmin );
+		tmax = ffmin( t1, tmax );
+		if ( tmax <= tmin ) {
+			return false;
+		}
+	}
+
+	return true;
+#else
+	// From the book
+	// In reviewing this intersection method, Andrew Kensler
+	// at Pixar tried some experiments and has proposed this version of the code which works
+	// extremely well on many compilers, and I have adopted it as my go-to meth
 	for ( int axis = 0; axis < 3; axis++ ) {
 		float invD = 1.0f / ray.m_direction[ axis ];
 		float t0 = ( m_min[ axis ] - ray.m_point[ axis ] ) * invD;
@@ -43,4 +79,40 @@ bool AABB::Hit( const Ray & ray, float tmin, float tmax ) const {
 	}
 
 	return true;
+#endif
 }
+
+/*
+====================================================
+AABB::IsValid
+====================================================
+*/
+bool AABB::IsValid() const {
+	if ( m_min.x >= m_max.x ) {
+		return false;
+	}
+	if ( m_min.y >= m_max.y ) {
+		return false;
+	}
+	if ( m_min.z >= m_max.z ) {
+		return false;
+	}
+
+	if ( Volume() <= 0 ) {
+		return false;
+	}
+
+	return true;
+}
+
+/*
+====================================================
+AABB::Volume
+====================================================
+*/
+float AABB::Volume() const {
+	const float volume = ( m_max.x - m_min.x ) * ( m_max.y - m_min.y ) * ( m_max.z - m_min.z );
+	assert( volume > 0 );
+	return volume;
+}
+

@@ -20,6 +20,11 @@ struct hitRecord_t {
 	Vec3d point;
 	Vec3d normal;
 	const Material * material;
+
+	hitRecord_t() {
+		t = 1000000;
+		material = NULL;
+	}
 };
 
 /*

@@ -58,6 +58,7 @@ HitableSphere::Bounds
 bool HitableSphere::Bounds( float t0, float t1, AABB & aabb ) const {
 	aabb.m_min = center - Vec3d( radius );
 	aabb.m_max = center + Vec3d( radius );
+	assert( aabb.IsValid() );
 	return true;
 }
 
@@ -112,16 +113,19 @@ HitableSphereDynamic::Bounds
 ====================================================
 */
 bool HitableSphereDynamic::Bounds( float t0, float t1, AABB & aabb ) const {
-	const float dt = t1 - t0;
+	//const float dt = t1 - t0;
 
-	Vec3d ptA = center + velocity * dt;
-	Vec3d ptB = center + velocity * dt;
+	Vec3d ptA = center + velocity * t0;
+	Vec3d ptB = center + velocity * t1;
 
 	AABB boundsA = AABB( ptA - Vec3d( radius ), ptA + Vec3d( radius ) );
 	AABB boundsB = AABB( ptB - Vec3d( radius ), ptB + Vec3d( radius ) );
 
-	aabb.m_min = center - Vec3d( radius );
-	aabb.m_max = center + Vec3d( radius );
+	aabb = AABB( boundsA, boundsB );
+	assert( aabb.IsValid() );
+
+// 	aabb.m_min = center - Vec3d( radius );
+// 	aabb.m_max = center + Vec3d( radius );
 	return true;
 }
 
@@ -222,6 +226,7 @@ bool HitableList::Bounds( float t0, float t1, AABB & bounds ) const {
 		}
 	}
 
+	assert( bounds.IsValid() );
 	return true;
 }
 
@@ -239,58 +244,61 @@ BoundsCompareX
 ====================================================
 */
 int BoundsCompareX( const void * a, const void * b ) {
-	AABB boundsLeft;
-	AABB boundsRight;
+	AABB boundsA;
+	AABB boundsB;
 
 	Hitable * ah = *(Hitable**)a;
 	Hitable * bh = *(Hitable**)b;
 
-	if ( !ah->Bounds( 0, 0, boundsLeft ) || !bh->Bounds( 0, 0, boundsRight ) ) {
+	if ( !ah->Bounds( 0, 0, boundsA ) || !bh->Bounds( 0, 0, boundsB ) ) {
 		printf( "no bounding box in bvhnode constructor\n" );
 		assert( 0 );
 	}
 
-	if ( ( boundsLeft.m_min.x - boundsRight.m_min.x ) < 0.0f ) {
+//	if ( ( boundsA.m_min.x - boundsB.m_min.x ) < 0.0f ) {
+	if ( boundsA.m_min.x < boundsB.m_min.x ) {
 		return -1;
-	} else {
-		return 1;
 	}
+
+	return 1;
 }
 int BoundsCompareY( const void * a, const void * b ) {
-	AABB boundsLeft;
-	AABB boundsRight;
+	AABB boundsA;
+	AABB boundsB;
 
 	Hitable * ah = *(Hitable**)a;
 	Hitable * bh = *(Hitable**)b;
 
-	if ( !ah->Bounds( 0, 0, boundsLeft ) || !bh->Bounds( 0, 0, boundsRight ) ) {
+	if ( !ah->Bounds( 0, 0, boundsA ) || !bh->Bounds( 0, 0, boundsB ) ) {
 		printf( "no bounding box in bvhnode constructor\n" );
 		assert( 0 );
 	}
 
-	if ( ( boundsLeft.m_min.y - boundsRight.m_min.y ) < 0.0f ) {
+//	if ( ( boundsA.m_min.y - boundsB.m_min.y ) < 0.0f ) {
+	if ( boundsA.m_min.y < boundsB.m_min.y ) {
 		return -1;
-	} else {
-		return 1;
 	}
+
+	return 1;
 }
 int BoundsCompareZ( const void * a, const void * b ) {
-	AABB boundsLeft;
-	AABB boundsRight;
+	AABB boundsA;
+	AABB boundsB;
 
 	Hitable * ah = *(Hitable**)a;
 	Hitable * bh = *(Hitable**)b;
 
-	if ( !ah->Bounds( 0, 0, boundsLeft ) || !bh->Bounds( 0, 0, boundsRight ) ) {
+	if ( !ah->Bounds( 0, 0, boundsA ) || !bh->Bounds( 0, 0, boundsB ) ) {
 		printf( "no bounding box in bvhnode constructor\n" );
 		assert( 0 );
 	}
 
-	if ( ( boundsLeft.m_min.z - boundsRight.m_min.z ) < 0.0f ) {
+//	if ( ( boundsA.m_min.z - boundsB.m_min.z ) < 0.0f ) {
+	if ( boundsA.m_min.z < boundsB.m_min.z ) {
 		return -1;
-	} else {
-		return 1;
 	}
+
+	return 1;
 }
 
 /*
@@ -300,7 +308,6 @@ BoundingVolumeHierarchyNode::BoundingVolumeHierarchyNode
 */
 BoundingVolumeHierarchyNode::BoundingVolumeHierarchyNode( Hitable ** l, int n, float t0, float t1, Random & rnd ) {
 	const int axis = int( 3.0f * rnd.Get() );
-
 	switch ( axis ) {
 		default:
 		case 0: { qsort( l, n, sizeof( Hitable * ), BoundsCompareX ); } break;
@@ -321,12 +328,18 @@ BoundingVolumeHierarchyNode::BoundingVolumeHierarchyNode( Hitable ** l, int n, f
 	AABB boundsLeft;
 	AABB boundsRight;
 
-	if ( !m_left->Bounds( t0, t1, boundsLeft ) || !m_right->Bounds( t0, t1, boundsRight ) ) {
+	const bool didBuildLeft = m_left->Bounds( t0, t1, boundsLeft );
+	const bool didBuildRight = m_right->Bounds( t0, t1, boundsRight );
+
+	if ( !didBuildLeft || !didBuildRight ) {
 		printf( "no bounding box in bvhnode constructor\n" );
 		assert( 0 );
 	}
+	assert( boundsLeft.IsValid() );
+	assert( boundsRight.IsValid() );
 
 	m_bounds = AABB( boundsLeft, boundsRight );
+	assert( m_bounds.IsValid() );
 }
 
 /*
@@ -335,28 +348,39 @@ BoundingVolumeHierarchyNode::Hit
 ====================================================
 */
 bool BoundingVolumeHierarchyNode::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & record ) const {
-	if ( m_bounds.Hit( ray, tMin, tMax ) ) {
-		hitRecord_t leftrec;
-		hitRecord_t rightrec;
-
-		const bool didHitLeft = m_left->Hit( ray, tMin, tMax, leftrec );
-		const bool didHitRight = m_right->Hit( ray, tMin, tMax, rightrec );
-
-		if ( didHitLeft && didHitRight ) {
-			if ( leftrec.t < rightrec.t ) {
-				record = leftrec;
-			} else {
-				record = rightrec;
-			}
-			return true;
-		} else if ( didHitLeft ) {
-			record = leftrec;
-			return true;
-		} else if ( didHitRight ) {
-			record = rightrec;
-			return true;
-		}
+	assert( m_bounds.IsValid() );
+	if ( !m_bounds.Hit( ray, tMin, tMax ) ) {
+		record.t = 100000000;	// set it be huge because fuck it, we hit jack shit
 		return false;
+	}
+
+	hitRecord_t leftrec;
+	hitRecord_t rightrec;
+
+	const bool didHitLeft = m_left->Hit( ray, tMin, tMax, leftrec );
+	const bool didHitRight = m_right->Hit( ray, tMin, tMax, rightrec );
+
+	if ( didHitLeft && didHitRight ) {
+#if 1
+		if ( leftrec.t < rightrec.t ) {
+			record = leftrec;
+		} else {
+			record = rightrec;
+		}
+#else
+		if ( rightrec.t < leftrec.t ) {
+			record = rightrec;
+		} else {
+			record = leftrec;
+		}
+#endif
+		return true;
+	} else if ( didHitLeft ) {
+		record = leftrec;
+		return true;
+	} else if ( didHitRight ) {
+		record = rightrec;
+		return true;
 	}
 
 	return false;

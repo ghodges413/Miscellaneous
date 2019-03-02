@@ -32,7 +32,11 @@ public:
 		return *this;
 	}
 
+	void Expand( const AABB & bounds );
+
 	bool Hit( const Ray & ray, float tmin, float tmax ) const;
+	bool IsValid() const;
+	float Volume() const;
 
 	Vec3d m_min;
 	Vec3d m_max;
