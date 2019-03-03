@@ -12,6 +12,7 @@
 #include "Texture.h"
 #include "Camera.h"
 #include "Perlin.h"
+#include "Targa.h"
 
 /*
 ====================================================
@@ -69,6 +70,11 @@ int main( int argc, char * argv[] ) {
 	Random random;
 
 	Perlin::Initialize( random );
+
+	Targa targaMars;
+	Targa targaEarth;
+	targaEarth.Load( "../common/images/earth512.tga", true );
+	targaMars.Load( "../common/images/mars512.tga", true );
 #if 0
 	//
 	//	Chapter 1 - motion blur
@@ -172,7 +178,7 @@ int main( int argc, char * argv[] ) {
 		camera.up = camera.fwd.Cross( camera.left );
 		camera.up.Normalize();
 		camera.m_focalPlane = 10.0f;
-		camera.m_aperture = 0.2f;
+		camera.m_aperture = 0.1f;//0.2f;
 		camera.m_fovy = 40.0f;
 
 		const int n = 500;
@@ -203,7 +209,9 @@ int main( int argc, char * argv[] ) {
 			list[ i++ ] = new HitableSphere( Vec3d( 0, 0, 1 ), 1.0f, new Dielectric( 1.5f ) );
 			list[ i++ ] = new HitableSphere( Vec3d( -4, 0, 1 ), 1.0f, new Lambertian( new TextureConstant( Vec3d( 0.4f, 0.2f, 0.1f ) ) ) );
 			list[ i++ ] = new HitableSphere( Vec3d( 4, 0, 1 ), 1.0f, new Metal( Vec3d( 0.7f, 0.6f, 0.5f ), 0.0f ) );
-			list[ i++ ] = new HitableSphere( Vec3d( 4, -3, 1 ), 1.0f, new Lambertian( new TextureNoise() ) );
+			list[ i++ ] = new HitableSphere( Vec3d( 0, -3, 1 ), 1.0f, new Lambertian( new TextureNoise() ) );
+			list[ i++ ] = new HitableSphere( Vec3d( 6, 1, 1 ), 1.0f, new Lambertian( new TextureImage( targaEarth.DataPtr(), targaEarth.GetWidth(), targaEarth.GetHeight() ) ) );
+			list[ i++ ] = new HitableSphere( Vec3d( 3, -2, 1 ), 1.0f, new Lambertian( new TextureImage( targaMars.DataPtr(), targaMars.GetWidth(), targaMars.GetHeight() ) ) );
 
 			world = new BoundingVolumeHierarchyNode( list, i, 0.0f, 1.0f, random );
 		}

@@ -125,6 +125,7 @@
     <ClCompile Include="..\code\Material.cpp" />
     <ClCompile Include="..\code\Perlin.cpp" />
     <ClCompile Include="..\code\Random.cpp" />
+    <ClCompile Include="..\code\Targa.cpp" />
     <ClCompile Include="..\code\Texture.cpp" />
     <ClCompile Include="..\code\Vector.cpp" />
   </ItemGroup>
@@ -137,6 +138,7 @@
     <ClInclude Include="..\code\Perlin.h" />
     <ClInclude Include="..\code\Random.h" />
     <ClInclude Include="..\code\Ray.h" />
+    <ClInclude Include="..\code\Targa.h" />
     <ClInclude Include="..\code\Texture.h" />
     <ClInclude Include="..\code\Vector.h" />
   </ItemGroup>
