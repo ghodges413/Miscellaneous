@@ -126,3 +126,14 @@ Vec3d MaterialEmittance::Emitted( float u, float v, const Vec3d & p, const Vec3d
 	color.z *= m_emittance.z;
 	return color;
 }
+
+/*
+====================================================
+MaterialIsotropic::Scatter
+====================================================
+*/
+bool MaterialIsotropic::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
+	scattered = Ray( record.point, rnd.RandomInUnitSphere(), ray.m_time );
+	attenuation = m_albedo->Sample( record.u, record.v, record.point, record.normal );
+	return true;
+}

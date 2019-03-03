@@ -344,6 +344,58 @@ bool HitableInstance::Bounds( float t0, float t1, AABB & aabb ) const {
 /*
 ========================================================================================================
 
+HitableMediumConstant
+
+========================================================================================================
+*/
+
+/*
+====================================================
+HitableMediumConstant::Hit
+====================================================
+*/
+bool HitableMediumConstant::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & record ) const {
+	hitRecord_t rec1;
+	hitRecord_t rec2;
+
+	if ( !m_boundary->Hit( ray, -FLT_MAX, FLT_MAX, rec1 ) ) {
+		return false;
+	}
+
+	if ( !m_boundary->Hit( ray, rec1.t + 0.0001f, FLT_MAX, rec2 ) ) {
+		return false;
+	}
+
+	if ( rec1.t < tMin ) {
+		rec1.t = tMin;
+	}
+	if ( rec2.t > tMax ) {
+		rec2.t = tMax;
+	}
+	if ( rec1.t >= rec2.t ) {
+		return false;
+	}
+
+	if ( rec1.t < 0 ) {
+		rec1.t = 0;
+	}
+
+	float distInsideBoundary = ( rec2.t - rec1.t ) * ray.m_direction.GetMagnitude();
+	float hitDist = -( 1.0f / m_density ) * logf( Random::Get() );
+	if ( hitDist >= distInsideBoundary ) {
+		return false;
+	}
+
+	record.t = rec1.t + hitDist / ray.m_direction.GetMagnitude();
+	record.point = ray.PositionAtT( record.t );
+	record.normal = Vec3d( 1, 0, 0 ); // arbitrary
+	record.material = m_phaseFunction;
+	return true;
+}
+
+/*
+========================================================================================================
+
 HitableList
 
 ========================================================================================================

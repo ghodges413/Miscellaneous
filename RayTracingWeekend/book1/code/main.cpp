@@ -339,7 +339,7 @@ int main( int argc, char * argv[] ) {
 
 		CloseFileWriteStream();
 	}
-#elif 1
+#elif 0
 	//
 	//	Chapter 6.5 - cornell box
 	//
@@ -399,6 +399,99 @@ int main( int argc, char * argv[] ) {
 		for ( int j = ny - 1; j >= 0; j-- ) {
 			for ( int i = 0; i < nx; i++ ) {
 				const int ns = 64;
+				Vec3d colorSum( 0, 0, 0 );
+				for ( int s = 0; s < ns; s++ ) {
+					float u = ( ( float( i ) + random.Get() ) / float( nx ) );
+					float v = ( ( float( j ) + random.Get() ) / float( ny ) );
+
+					Ray ray;
+					camera.GetRay( u, v, ray, random );
+
+					Vec3d color = ColorWorldMaterial( ray, world, random, 0, false );
+					colorSum += color;
+				}
+				Vec3d color = colorSum / float( ns );
+
+				// Gamma correct the color
+				color = Vec3d( sqrtf( color.x ), sqrtf( color.y ), sqrtf( color.z ) );
+
+				int ir = int( 255.99f * color.x );
+				int ig = int( 255.99f * color.y );
+				int ib = int( 255.99f * color.z );
+				ir = std::min< int >( 255, ir );
+				ig = std::min< int >( 255, ig );
+				ib = std::min< int >( 255, ib );
+				sprintf( strBuffer, "%i %i %i\n", ir, ig, ib );
+				WriteFileStream( strBuffer );
+			}
+		}
+
+		CloseFileWriteStream();
+	}
+#elif 1
+	//
+	//	Chapter 8 - volumetric media
+	//
+	{
+		if ( !OpenFileWriteStream( "outputImages/volumetric.ppm" ) ) {
+			return -1;
+		}
+
+		Vec3d lookat;
+		camera.pos = Vec3d( 6, 0, 0 );
+		lookat = Vec3d( 0 );
+		camera.fwd = ( lookat - camera.pos );
+		camera.fwd.Normalize();
+		camera.left = Vec3d( 0, 0, 1 ).Cross( camera.fwd );
+		camera.left.Normalize();
+		camera.up = camera.fwd.Cross( camera.left );
+		camera.up.Normalize();
+		camera.m_focalPlane = 10.0f;
+		camera.m_aperture = 0.0f;//0.2f;
+		camera.m_fovy = 90.0f;
+
+		const int n = 500;
+		Hitable ** list = new Hitable* [ n ];
+		HitableList * world = NULL;
+
+		int i = 0;
+		Material * matRed = new Lambertian( new TextureConstant( Vec3d( 1, 0, 0 ) ) );
+		Material * matWhite = new Lambertian( new TextureConstant( Vec3d( 1, 1, 1 ) ) );
+		Material * matGreen = new Lambertian( new TextureConstant( Vec3d( 0, 1, 0 ) ) );
+		Material * matBlue = new Lambertian( new TextureConstant( Vec3d( 0, 0, 1 ) ) );
+		Material * matLight = new MaterialEmittance( NULL, Vec3d( 10.0f ) );
+
+		const float s = 2;
+		const float sl = s * 0.2f;
+		list[ i++ ] = new HitableRectYZ( -s, s, -s, s, -s, matBlue );
+		list[ i++ ] = new HitableRectXY( -sl, sl, -sl, sl, s - 0.01f, matLight );
+		list[ i++ ] = new HitableRectXY( -s, s, -s, s, s, matWhite );
+		list[ i++ ] = new HitableRectXY( -s, s, -s, s, -s, matWhite );
+		list[ i++ ] = new HitableRectXZ( -s, s, -s, s, -s, matRed );
+		list[ i++ ] = new HitableRectXZ( -s, s, -s, s, s, matGreen );
+
+		HitableBox * boxA = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 2 ) ), matWhite );
+		HitableBox * boxB = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 1 ) ), matWhite );
+
+		MaterialIsotropic * matSmokeBlack = new MaterialIsotropic( new TextureConstant( Vec3d( 0.0f ) ) );
+		MaterialIsotropic * matSmokeWhite = new MaterialIsotropic( new TextureConstant( Vec3d( 1.0f ) ) );
+
+		HitableMediumConstant * boxVolumeA = new HitableMediumConstant( 1.0f, boxA, matSmokeBlack );
+		HitableMediumConstant * boxVolumeB = new HitableMediumConstant( 1.0f, boxB, matSmokeWhite );
+
+		list[ i++ ] = new HitableInstance( Vec3d( -0.75f, -0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), 20 ), boxVolumeA );
+		list[ i++ ] = new HitableInstance( Vec3d( 0.75f, 0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), -20 ), boxVolumeB );
+
+		// 		list[ i++ ] = new HitableBox( AABB( Vec3d( -1.25f, -1.25f, -2.0f ), Vec3d( -0.25f, -0.25f, 0.0f ) ), matWhite );
+		// 		list[ i++ ] = new HitableBox( AABB( Vec3d( 0.25f, 0.25f, -2.0f ), Vec3d( 1.25f, 1.25f, -1.0f ) ), matWhite );
+
+		world = new HitableList( list, i );
+
+		sprintf( strBuffer, "P3\n%i %i\n255\n", nx, ny );
+		WriteFileStream( strBuffer );
+		for ( int j = ny - 1; j >= 0; j-- ) {
+			for ( int i = 0; i < nx; i++ ) {
+				const int ns = 640;
 				Vec3d colorSum( 0, 0, 0 );
 				for ( int s = 0; s < ns; s++ ) {
 					float u = ( ( float( i ) + random.Get() ) / float( nx ) );

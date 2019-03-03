@@ -80,3 +80,17 @@ public:
 	Texture * m_texture;
 	Vec3d m_emittance;
 };
+
+/*
+====================================================
+MaterialIsotropic
+====================================================
+*/
+class MaterialIsotropic : public Material {
+public:
+	MaterialIsotropic() : m_albedo( NULL ) {}
+	MaterialIsotropic( Texture * albedo ) : m_albedo( albedo ) {}
+	virtual bool Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const override;
+
+	Texture * m_albedo;
+};

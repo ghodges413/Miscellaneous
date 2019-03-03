@@ -17,6 +17,8 @@ hitRecord_t
 ====================================================
 */
 struct hitRecord_t {
+	float u;
+	float v;
 	float t;
 	Vec3d point;
 	Vec3d normal;
@@ -205,6 +207,28 @@ public:
 	const Hitable * m_instance;
 	Vec3d m_offset;
 	Matrix m_orient;
+};
+
+/*
+====================================================
+HitableMediumConstant
+====================================================
+*/
+class HitableMediumConstant : public Hitable {
+public:
+	HitableMediumConstant() {}
+	HitableMediumConstant( float density, const Hitable * instance, const Material * phaseFunction ) : m_density( density ), m_boundary( instance ), m_phaseFunction( phaseFunction ) {}
+	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override {
+		if ( NULL == m_boundary || !m_boundary->Bounds( t0, t1, aabb ) ) {
+			return false;
+		}
+		return true;
+	}
+
+	float m_density;
+	const Hitable * m_boundary;
+	const Material * m_phaseFunction;
 };
 
 /*
