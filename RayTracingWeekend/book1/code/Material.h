@@ -19,6 +19,7 @@ Material
 class Material {
 public:
 	virtual bool Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const = 0;
+	virtual Vec3d Emitted( float u, float v, const Vec3d & p, const Vec3d & normal ) const { return Vec3d( 0.0f ); }
 };
 
 /*
@@ -62,4 +63,20 @@ public:
 
 private:
 	float m_indexOfRefraction;
+};
+
+/*
+====================================================
+MaterialEmittance
+====================================================
+*/
+class MaterialEmittance : public Material {
+public:
+	MaterialEmittance() : m_texture( NULL ), m_emittance( 1.0f ) {}
+	MaterialEmittance( Texture * texture, Vec3d emittance ) : m_texture( texture ), m_emittance( emittance ) {}
+	virtual bool Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const override;
+	virtual Vec3d Emitted( float u, float v, const Vec3d & p, const Vec3d & normal ) const override;
+
+	Texture * m_texture;
+	Vec3d m_emittance;
 };

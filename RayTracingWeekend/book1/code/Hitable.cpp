@@ -175,6 +175,90 @@ bool HitablePlane::Bounds( float t0, float t1, AABB & aabb ) const {
 /*
 ========================================================================================================
 
+HitableSquare
+
+========================================================================================================
+*/
+
+
+bool HitableRectXY::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & record ) const {
+	float t = ( k - ray.m_point.z ) / ray.m_direction.z;
+	if ( t < tMin || t > tMax ) {
+		return false;
+	}
+
+	float x = ray.m_point.x + t * ray.m_direction.x;
+	float y = ray.m_point.y + t * ray.m_direction.y;
+	if ( x < x0 || x > x1 || y < y0 || y > y1 ) {
+		return false;
+	}
+
+// 	record.u = ( x - x0 ) / ( x1 - x0 );
+// 	record.v = ( y - y0 ) / ( y1 - y0 );
+	record.t = t;
+	record.material = m_material;
+	record.point = ray.PositionAtT( t );
+	record.normal = Vec3d( 0, 0, 1 );
+	if ( ray.m_point.z < k ) {
+		record.normal = Vec3d( 0, 0, -1 );
+	}
+	record.point += record.normal * 0.001f;
+	return true;
+}
+
+bool HitableRectXZ::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & record ) const {
+	float t = ( k - ray.m_point.y ) / ray.m_direction.y;
+	if ( t < tMin || t > tMax ) {
+		return false;
+	}
+
+	float x = ray.m_point.x + t * ray.m_direction.x;
+	float z = ray.m_point.z + t * ray.m_direction.z;
+	if ( x < x0 || x > x1 || z < z0 || z > z1 ) {
+		return false;
+	}
+
+// 	record.u = ( x - x0 ) / ( x1 - x0 );
+// 	record.v = ( z - z0 ) / ( z1 - z0 );
+	record.t = t;
+	record.material = m_material;
+	record.point = ray.PositionAtT( t );
+	record.normal = Vec3d( 0, 1, 0 );
+	if ( ray.m_point.y < k ) {
+		record.normal = Vec3d( 0, -1, 0 );
+	}
+	record.point += record.normal * 0.001f;
+	return true;
+}
+
+bool HitableRectYZ::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & record ) const {
+	float t = ( k - ray.m_point.x ) / ray.m_direction.x;
+	if ( t < tMin || t > tMax ) {
+		return false;
+	}
+
+	float y = ray.m_point.y + t * ray.m_direction.y;
+	float z = ray.m_point.z + t * ray.m_direction.z;
+	if ( y < y0 || y > y1 || z < z0 || z > z1 ) {
+		return false;
+	}
+
+// 	record.u = ( y - y0 ) / ( y1 - y0 );
+// 	record.v = ( z - z0 ) / ( z1 - z0 );
+	record.t = t;
+	record.material = m_material;
+	record.point = ray.PositionAtT( t );
+	record.normal = Vec3d( 1, 0, 0 );
+	if ( ray.m_point.x < k ) {
+		record.normal = Vec3d( -1, 0, 0 );
+	}
+	record.point += record.normal * 0.001f;
+	return true;
+}
+
+/*
+========================================================================================================
+
 HitableList
 
 ========================================================================================================

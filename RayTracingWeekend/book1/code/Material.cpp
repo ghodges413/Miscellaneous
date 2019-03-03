@@ -101,3 +101,28 @@ bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & a
 
 	return true;
 }
+
+/*
+====================================================
+MaterialEmittance::Scatter
+====================================================
+*/
+bool MaterialEmittance::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
+	return false;
+}
+
+/*
+====================================================
+MaterialEmittance::Emitted
+====================================================
+*/
+Vec3d MaterialEmittance::Emitted( float u, float v, const Vec3d & p, const Vec3d & normal ) const {
+	Vec3d color( 1.0f );
+	if ( NULL != m_texture ) {
+		color = m_texture->Sample( u, v, p, normal );
+	}
+	color.x *= m_emittance.x;
+	color.y *= m_emittance.y;
+	color.z *= m_emittance.z;
+	return color;
+}

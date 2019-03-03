@@ -96,6 +96,65 @@ public:
 
 /*
 ====================================================
+HitableRectXY
+====================================================
+*/
+class HitableRectXY : public Hitable {
+public:
+	HitableRectXY() { m_material = NULL; }
+	HitableRectXY( float _x0, float _x1, float _y0, float _y1, float _k, const Material * mat ) : x0( _x0 ), x1( _x1 ), y0( _y0 ), y1( _y1 ), k( _k ), m_material( mat ) {}
+	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override {
+		aabb = AABB( Vec3d( x0, y0, k - 0.01f ), Vec3d( x1, y1, k + 0.01f ) );
+		return true;
+	}
+
+
+	float x0, x1, y0, y1, k;
+	const Material * m_material;
+};
+
+/*
+====================================================
+HitableRectXZ
+====================================================
+*/
+class HitableRectXZ : public Hitable {
+public:
+	HitableRectXZ() { m_material = NULL; }
+	HitableRectXZ( float _x0, float _x1, float _z0, float _z1, float _k, const Material * mat ) : x0( _x0 ), x1( _x1 ), z0( _z0 ), z1( _z1 ), k( _k ), m_material( mat ) {}
+	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override {
+		aabb = AABB( Vec3d( x0, k - 0.01f, z0 ), Vec3d( x1, k + 0.01f, z1 ) );
+		return true;
+	}
+
+
+	float x0, x1, z0, z1, k;
+	const Material * m_material;
+};
+
+/*
+====================================================
+HitableRectYZ
+====================================================
+*/
+class HitableRectYZ : public Hitable {
+public:
+	HitableRectYZ() { m_material = NULL; }
+	HitableRectYZ( float _y0, float _y1, float _z0, float _z1, float _k, const Material * mat ) : y0( _y0 ), y1( _y1 ), z0( _z0 ), z1( _z1 ), k( _k ), m_material( mat ) {}
+	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override {
+		aabb = AABB( Vec3d( k - 0.01f, y0, z0 ), Vec3d( k + 0.01f, y1, z1 ) );
+		return true;
+	}
+
+	float y0, y1, z0, z1, k;
+	const Material * m_material;
+};
+
+/*
+====================================================
 HitableList
 ====================================================
 */
