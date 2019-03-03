@@ -67,8 +67,8 @@ main
 int main( int argc, char * argv[] ) {
 	char strBuffer[ 1024 ];
 
-	const int nx = 512;
-	const int ny = 256;
+	const int nx = 384 * 2;//512;
+	const int ny = 256 * 2;
 
 	Camera camera( 90, float( nx ) / float( ny ), 5.0f, 1.5f, 1.0f );
 	Random random;
@@ -351,7 +351,7 @@ int main( int argc, char * argv[] ) {
 		Vec3d lookat;
 // 		camera.pos = Vec3d( 278, 278, -800 );
 // 		lookat = Vec3d( 278, 278, 0 );
-		camera.pos = Vec3d( 15, 0, 0 );
+		camera.pos = Vec3d( 6, 0, 0 );
 		lookat = Vec3d( 0 );
 		camera.fwd = ( lookat - camera.pos );
 		camera.fwd.Normalize();
@@ -361,7 +361,7 @@ int main( int argc, char * argv[] ) {
 		camera.up.Normalize();
 		camera.m_focalPlane = 10.0f;
 		camera.m_aperture = 0.0f;//0.2f;
-		camera.m_fovy = 40.0f;
+		camera.m_fovy = 90.0f;
 
 		const int n = 500;
 		Hitable ** list = new Hitable* [ n ];
@@ -383,8 +383,14 @@ int main( int argc, char * argv[] ) {
 		list[ i++ ] = new HitableRectXZ( -s, s, -s, s, -s, matRed );
 		list[ i++ ] = new HitableRectXZ( -s, s, -s, s, s, matGreen );
 
-// 		list[ i++ ] = new HitableSphere( Vec3d( 0, 0, 1 ), 0.5f, new MaterialEmittance( new TextureImage( targaMars.DataPtr(), targaMars.GetWidth(), targaMars.GetHeight() ), Vec3d( 1.0f ) ) );
-// 		list[ i++ ] = new HitableSphere( Vec3d( 0, 0, 0 ), 0.5f, new Metal( Vec3d( 0.7f, 0.6f, 0.5f ), 0.0f ) );
+		HitableBox * boxA = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 2 ) ), matWhite );
+		HitableBox * boxB = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 1 ) ), matWhite );
+
+		list[ i++ ] = new HitableInstance( Vec3d( -0.75f, -0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), 20 ), boxA );
+		list[ i++ ] = new HitableInstance( Vec3d( 0.75f, 0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), -20 ), boxB );
+
+// 		list[ i++ ] = new HitableBox( AABB( Vec3d( -1.25f, -1.25f, -2.0f ), Vec3d( -0.25f, -0.25f, 0.0f ) ), matWhite );
+// 		list[ i++ ] = new HitableBox( AABB( Vec3d( 0.25f, 0.25f, -2.0f ), Vec3d( 1.25f, 1.25f, -1.0f ) ), matWhite );
 		
 		world = new HitableList( list, i );
 

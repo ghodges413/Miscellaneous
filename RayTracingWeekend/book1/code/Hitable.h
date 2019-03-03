@@ -9,6 +9,7 @@
 #include "Material.h"
 #include "Ray.h"
 #include "AABB.h"
+#include "Matrix.h"
 
 /*
 ====================================================
@@ -167,6 +168,43 @@ public:
 
 	Hitable ** list;
 	int num;
+};
+
+/*
+====================================================
+HitableBox
+====================================================
+*/
+class HitableBox : public Hitable {
+public:
+	HitableBox() {}
+	HitableBox( const AABB & bounds, const Material * material );
+	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override {
+		aabb = m_bounds;
+		return true;
+	}
+
+	AABB m_bounds;
+	const Material * m_material;
+	HitableList * m_list;
+};
+
+/*
+====================================================
+HitableInstance
+====================================================
+*/
+class HitableInstance : public Hitable {
+public:
+	HitableInstance() {}
+	HitableInstance( const Vec3d & offset, const Matrix & orient, const Hitable * instance ) : m_offset( offset ), m_orient( orient ), m_instance( instance ) {}
+	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
+	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override;
+
+	const Hitable * m_instance;
+	Vec3d m_offset;
+	Matrix m_orient;
 };
 
 /*

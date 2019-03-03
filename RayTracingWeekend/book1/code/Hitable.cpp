@@ -259,6 +259,91 @@ bool HitableRectYZ::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & 
 /*
 ========================================================================================================
 
+HitableBox
+
+========================================================================================================
+*/
+
+/*
+====================================================
+HitableBox::HitableBox
+====================================================
+*/
+HitableBox::HitableBox( const AABB & bounds, const Material * material ) : m_bounds( bounds ), m_material( material ) {
+	Hitable ** walls = new Hitable*[ 6 ];
+	walls[ 0 ] = new HitableRectXY( m_bounds.m_min.x, m_bounds.m_max.x, m_bounds.m_min.y, m_bounds.m_max.y, m_bounds.m_min.z, m_material );
+	walls[ 1 ] = new HitableRectXY( m_bounds.m_min.x, m_bounds.m_max.x, m_bounds.m_min.y, m_bounds.m_max.y, m_bounds.m_max.z, m_material );
+
+	walls[ 2 ] = new HitableRectXZ( m_bounds.m_min.x, m_bounds.m_max.x, m_bounds.m_min.z, m_bounds.m_max.z, m_bounds.m_min.y, m_material );
+	walls[ 3 ] = new HitableRectXZ( m_bounds.m_min.x, m_bounds.m_max.x, m_bounds.m_min.z, m_bounds.m_max.z, m_bounds.m_max.y, m_material );
+
+	walls[ 4 ] = new HitableRectYZ( m_bounds.m_min.y, m_bounds.m_max.y, m_bounds.m_min.z, m_bounds.m_max.z, m_bounds.m_min.x, m_material );
+	walls[ 5 ] = new HitableRectYZ( m_bounds.m_min.y, m_bounds.m_max.y, m_bounds.m_min.z, m_bounds.m_max.z, m_bounds.m_max.x, m_material );
+
+	m_list = new HitableList( walls, 6 );
+}
+
+/*
+====================================================
+HitableBox::Hit
+====================================================
+*/
+bool HitableBox::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & record ) const {
+	return m_list->Hit( ray, tMin, tMax, record );
+}
+
+/*
+========================================================================================================
+
+HitableInstance
+
+========================================================================================================
+*/
+
+/*
+====================================================
+HitableInstance::Hit
+====================================================
+*/
+bool HitableInstance::Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const {
+	Ray ray = r;
+	ray.m_point -= m_offset;
+	Matrix transposed = m_orient;
+	transposed.Transpose();
+	ray.m_point = transposed * ray.m_point;
+	ray.m_direction = transposed * ray.m_direction;
+
+
+	if ( NULL == m_instance || !m_instance->Hit( ray, tMin, tMax, record ) ) {
+		return false;
+	}
+
+	record.normal = m_orient * record.normal;
+	record.point = m_orient * record.point;
+	record.point += m_offset;
+	return true;
+}
+
+/*
+====================================================
+HitableInstance::Bounds
+====================================================
+*/
+bool HitableInstance::Bounds( float t0, float t1, AABB & aabb ) const {
+	if ( NULL == m_instance || !m_instance->Bounds( t0, t1, aabb ) ) {
+		return false;
+	}
+
+	// TODO: Make eight points from the aabb, rotate and translate each of them;
+
+	aabb.m_min += m_offset;
+	aabb.m_max += m_offset;
+	return true;
+}
+
+/*
+========================================================================================================
+
 HitableList
 
 ========================================================================================================

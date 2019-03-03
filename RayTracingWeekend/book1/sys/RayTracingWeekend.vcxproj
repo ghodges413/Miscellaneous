@@ -123,7 +123,10 @@
     <ClCompile Include="..\code\Hitable.cpp" />
     <ClCompile Include="..\code\main.cpp" />
     <ClCompile Include="..\code\Material.cpp" />
+    <ClCompile Include="..\code\Matrix.cpp" />
+    <ClCompile Include="..\code\MatrixOps.cpp" />
     <ClCompile Include="..\code\Perlin.cpp" />
+    <ClCompile Include="..\code\Quat.cpp" />
     <ClCompile Include="..\code\Random.cpp" />
     <ClCompile Include="..\code\Targa.cpp" />
     <ClCompile Include="..\code\Texture.cpp" />
@@ -135,7 +138,10 @@
     <ClInclude Include="..\code\Fileio.h" />
     <ClInclude Include="..\code\Hitable.h" />
     <ClInclude Include="..\code\Material.h" />
+    <ClInclude Include="..\code\Matrix.h" />
+    <ClInclude Include="..\code\MatrixOps.h" />
     <ClInclude Include="..\code\Perlin.h" />
+    <ClInclude Include="..\code\Quat.h" />
     <ClInclude Include="..\code\Random.h" />
     <ClInclude Include="..\code\Ray.h" />
     <ClInclude Include="..\code\Targa.h" />
