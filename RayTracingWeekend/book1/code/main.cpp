@@ -38,7 +38,7 @@ Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, Random & rnd, int re
 	}
 
 	hitRecord_t record;
-	if ( world->Hit( ray, 0.0f, 1000.0f, record ) ) {
+	if ( world->Hit( ray, 0.0f, 10000.0f, record ) ) {
 		Ray scattered;
 		Vec3d attenuation;
 		Vec3d emittance = record.material->Emitted( record.point.x, record.point.y, record.point, record.normal );
@@ -428,7 +428,7 @@ int main( int argc, char * argv[] ) {
 
 		CloseFileWriteStream();
 	}
-#elif 1
+#elif 0
 	//
 	//	Chapter 8 - volumetric media
 	//
@@ -492,6 +492,121 @@ int main( int argc, char * argv[] ) {
 		for ( int j = ny - 1; j >= 0; j-- ) {
 			for ( int i = 0; i < nx; i++ ) {
 				const int ns = 640;
+				Vec3d colorSum( 0, 0, 0 );
+				for ( int s = 0; s < ns; s++ ) {
+					float u = ( ( float( i ) + random.Get() ) / float( nx ) );
+					float v = ( ( float( j ) + random.Get() ) / float( ny ) );
+
+					Ray ray;
+					camera.GetRay( u, v, ray, random );
+
+					Vec3d color = ColorWorldMaterial( ray, world, random, 0, false );
+					colorSum += color;
+				}
+				Vec3d color = colorSum / float( ns );
+
+				// Gamma correct the color
+				color = Vec3d( sqrtf( color.x ), sqrtf( color.y ), sqrtf( color.z ) );
+
+				int ir = int( 255.99f * color.x );
+				int ig = int( 255.99f * color.y );
+				int ib = int( 255.99f * color.z );
+				ir = std::min< int >( 255, ir );
+				ig = std::min< int >( 255, ig );
+				ib = std::min< int >( 255, ib );
+				sprintf( strBuffer, "%i %i %i\n", ir, ig, ib );
+				WriteFileStream( strBuffer );
+			}
+		}
+
+		CloseFileWriteStream();
+	}
+#elif 1
+	//
+	//	Chapter 9 - cover
+	//
+	{
+		if ( !OpenFileWriteStream( "outputImages/cover.ppm" ) ) {
+			return -1;
+		}
+
+		HitableList * world = NULL;
+		{
+			int nb = 20;
+			Hitable ** list = new Hitable*[30];
+			Hitable ** boxlist = new Hitable*[10000];
+			Hitable ** boxlist2 = new Hitable*[10000];
+			Material * white = new Lambertian( new TextureConstant( Vec3d( 0.73, 0.73, 0.73 ) ) );
+			Material * ground = new Lambertian( new TextureConstant( Vec3d( 0.48, 0.83, 0.53 ) ) );
+			int b = 0;
+			for ( int i = 0; i < nb; i++ ) {
+				for ( int j = 0; j < nb; j++ ) {
+					float w = 10;
+					float x0 = -100 + i * w;
+					float y0 = -100 + j * w;
+					float z0 = -20;
+					float x1 = x0 + w;
+					float y1 = y0 + w;
+					float z1 = -10 * ( Random::Get() + 0.01f );					
+					boxlist[ b++ ] = new HitableBox( AABB( Vec3d( x0, y0, z0 ), Vec3d( x1, y1, z1 ) ), ground );
+				}
+			}
+
+			int l = 0;
+ 			list[ l++ ] = new BoundingVolumeHierarchyNode( boxlist, b, 0, 1, random );
+ 			Material * light = new MaterialEmittance( new TextureConstant( Vec3d( 7, 7, 7 ) ), 1.0f );
+ 			list[ l++ ] = new HitableRectXY( 12.3, 42.3, 14.7, 41.2, 55.4, light );
+			Vec3d center( 20, 20, 20 );
+			list[ l++ ] = new HitableSphereDynamic( center, center + Vec3d( 3, 0, 0 ), 1, new Lambertian( new TextureConstant( Vec3d( 0.7, 0.3, 0.1 ) ) ) );
+			list[ l++ ] = new HitableSphere( Vec3d( 26, 15, 4.5 ), 5, new Dielectric( 1.5 ) );
+			list[ l++ ] = new HitableSphere( Vec3d( 0, 15, 14.5 ), 5, new Metal( Vec3d( 0.8, 0.8, 0.9 ), 10 ) );
+			Hitable * boundary = new HitableSphere( Vec3d( 36, 15, 14.5 ), 7, new Dielectric( 1.5 ) );
+			list[ l++ ] = boundary;
+// 			list[ l++ ] = new HitableMediumConstant( 2.0f, boundary, new MaterialIsotropic( new TextureConstant( Vec3d( 0.2, 0.4, 0.9 ) ) ) );
+// 			boundary = new HitableSphere( Vec3d( 0 ), 50, new Dielectric( 1.5 ) );
+// 			list[ l++ ] = new HitableMediumConstant( 0.1f, boundary, new MaterialIsotropic( new TextureConstant( Vec3d( 1 ) ) ) );
+
+			Material * emat = new Lambertian( new TextureImage( targaEarth.DataPtr(), targaEarth.GetWidth(), targaEarth.GetHeight() ) ); // load earth material
+			list[ l++ ] = new HitableSphere( Vec3d( 40, 40, 20 ), 10, emat );
+			Texture * pertext = new TextureNoise( 0.1 );
+			list[ l++ ] = new HitableSphere( Vec3d( 22, 28, 30 ), 8, new Lambertian( pertext ) );
+
+			int ns = 1000;
+			for ( int j = 0; j < ns; j++ ) {
+				boxlist2[ j ] = new HitableSphere( Vec3d( 16.5f * Random::Get(), 16.5f * Random::Get(), 16.5f * Random::Get() ), 1.0f, white );
+			}
+			list[ l++ ] = new HitableInstance( Vec3d( -10, 39.5f, 27 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), 15 ), new BoundingVolumeHierarchyNode( boxlist2, ns, 0.0, 1.0, random ) );
+			world = new HitableList( list, l );
+		}
+
+		Vec3d lookat;
+		AABB worldBounds;
+		world->Bounds( 0, 1, worldBounds );
+		const float worldRadius = worldBounds.Radius();
+		lookat = worldBounds.Center();
+		
+		camera.pos = Vec3d( 6, 0, 0 );
+		float camdeg = 225;
+		float camx = cosf( camdeg * 3.1415f / 180.0f );
+		float camy = sinf( camdeg * 3.1415f / 180.0f );
+		camera.pos = Vec3d( camx, camy, 0.5f ) * 35.0f;// * 2.0f;
+		lookat = Vec3d( 0, 0, 20 );
+		camera.fwd = ( lookat - camera.pos );
+		camera.fwd.Normalize();
+		camera.left = Vec3d( 0, 0, 1 ).Cross( camera.fwd );
+		camera.left.Normalize();
+		camera.up = camera.fwd.Cross( camera.left );
+		camera.up.Normalize();
+		camera.left = camera.left * -1.0f;
+		camera.m_focalPlane = 35.0f;
+		camera.m_aperture = 0.2f;
+		camera.m_fovy = 90.0f;
+
+		sprintf( strBuffer, "P3\n%i %i\n255\n", nx, ny );
+		WriteFileStream( strBuffer );
+		for ( int j = ny - 1; j >= 0; j-- ) {
+			for ( int i = 0; i < nx; i++ ) {
+				const int ns = 64;
 				Vec3d colorSum( 0, 0, 0 );
 				for ( int s = 0; s < ns; s++ ) {
 					float u = ( ( float( i ) + random.Get() ) / float( nx ) );

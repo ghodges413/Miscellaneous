@@ -37,6 +37,8 @@ public:
 	bool Hit( const Ray & ray, float tmin, float tmax ) const;
 	bool IsValid() const;
 	float Volume() const;
+	float Radius() const;
+	Vec3d Center() const;
 
 	Vec3d m_min;
 	Vec3d m_max;

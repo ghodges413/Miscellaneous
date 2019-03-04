@@ -116,3 +116,23 @@ float AABB::Volume() const {
 	return volume;
 }
 
+/*
+====================================================
+AABB::Radius
+====================================================
+*/
+float AABB::Radius() const {
+	Vec3d ds = m_max - m_min;
+	float radius = ds.GetMagnitude() * 0.5f;
+	return radius;
+}
+
+/*
+====================================================
+AABB::Center
+====================================================
+*/
+Vec3d AABB::Center() const {
+	Vec3d center = ( m_max + m_min ) * 0.5f;
+	return center;
+}
