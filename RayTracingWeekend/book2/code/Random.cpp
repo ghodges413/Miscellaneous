@@ -15,6 +15,23 @@ Random::RandomInUnitSphere
 ====================================================
 */
 Vec3d Random::RandomInUnitSphere() {
-	Vec3d p = Vec3d( Get(), Get(), Get() ) * 2.0f - Vec3d( 1.0f, 1.0f, 1.0f );
+	Vec3d p;
+	do {
+		p = Vec3d( Get(), Get(), Get() ) * 2.0f - Vec3d( 1.0f, 1.0f, 1.0f );
+	} while ( p.DotProduct( p ) >= 1.0f );
+	return p;
+}
+
+/*
+====================================================
+Random::RandomOnSphereSurface
+====================================================
+*/
+Vec3d Random::RandomOnSphereSurface() {
+	Vec3d p;
+	do {
+		p = Vec3d( Get(), Get(), Get() ) * 2.0f - Vec3d( 1.0f, 1.0f, 1.0f );
+	} while ( p.DotProduct( p ) >= 1.0f );
+	p.Normalize();
 	return p;
 }

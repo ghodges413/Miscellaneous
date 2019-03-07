@@ -110,9 +110,58 @@ int main( int argc, char * argv[] ) {
 		printf( "Pi stratified = %f\n", pis );
 		printf( "-------------------------------\n" );
 	}
-#elif 0
+#elif 1
 	//
-	//	Chapter 1 - Monte Carlo Pi (How many times will we do this?)
+	//	Chapter 2 - Monte Carlo with probability density functions (importance sampling)
+	//
+	{
+		auto lambdaPDF = []( float x ) {
+			return 0.5f;
+		};
+
+		int N = 10000;
+		float sum = 0;
+		for ( int i = 0; i < N; i++ ) {
+			float x = 2.0f * Random::Get();
+			sum += x * x / lambdaPDF( x );
+		}
+		float integrand = sum / (float)N;
+		printf( "I = %f\n", integrand );
+
+
+		auto lambdaPDF2 = []( float x ) {
+			return 3.0f * x * x / 8.0f;
+		};
+
+		N = 1;
+		sum = 0;
+		for ( int i = 0; i < N; i++ ) {
+			float x = powf( 8.0f * Random::Get(), 1.0f / 3.0f );
+			sum += x * x / lambdaPDF2( x );
+		}
+		integrand = sum / (float)N;
+		printf( "I = %f\n", integrand );
+
+
+		auto lambdaPDF3 = []( const Vec3d & p ) {
+			const float pi = acosf( -1.0f );
+			return ( 1.0f / ( 4.0f * pi ) );
+		};
+
+		const int N = 10000;
+		float sum = 0.0f;
+		for ( int i = 0; i < N; i++ ) {
+			Vec3d p = Random::RandomOnSphereSurface();
+			float cosSquared = p.z * p.z;
+			sum += cosSquared / lambdaPDF3( p );
+		}
+		const float integral = sum / (float)N;
+		printf( "I = %f\n", integral );
+		printf( "-----------------------\n" );
+	}
+#elif 2
+	//
+	//	Chapter  - Monte Carlo Pi (How many times will we do this?)
 	//
 	{
 		if ( !OpenFileWriteStream( "outputImages/motion.ppm" ) ) {
