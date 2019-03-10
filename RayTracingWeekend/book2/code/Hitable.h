@@ -239,7 +239,7 @@ BoundingVolumeHierarchyNode
 class BoundingVolumeHierarchyNode : public Hitable {
 public:
 	BoundingVolumeHierarchyNode() : m_left( NULL ), m_right( NULL ) {}
-	BoundingVolumeHierarchyNode( Hitable ** l, int n, float t0, float t1, Random & rnd );
+	BoundingVolumeHierarchyNode( Hitable ** l, int n, float t0, float t1 );
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
 	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override;
 

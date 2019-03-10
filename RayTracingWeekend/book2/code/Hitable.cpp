@@ -335,9 +335,26 @@ bool HitableInstance::Bounds( float t0, float t1, AABB & aabb ) const {
 	}
 
 	// TODO: Make eight points from the aabb, rotate and translate each of them;
+	Vec3d pts[ 8 ];
+	pts[ 0 ] = Vec3d( aabb.m_min.x, aabb.m_min.y, aabb.m_min.z );
+	pts[ 1 ] = Vec3d( aabb.m_max.x, aabb.m_min.y, aabb.m_min.z );
+	pts[ 2 ] = Vec3d( aabb.m_min.x, aabb.m_max.y, aabb.m_min.z );
+	pts[ 3 ] = Vec3d( aabb.m_min.x, aabb.m_min.y, aabb.m_max.z );
+
+	pts[ 4 ] = Vec3d( aabb.m_max.x, aabb.m_max.y, aabb.m_max.z );
+	pts[ 5 ] = Vec3d( aabb.m_min.x, aabb.m_max.y, aabb.m_max.z );
+	pts[ 6 ] = Vec3d( aabb.m_max.x, aabb.m_min.y, aabb.m_max.z );
+	pts[ 7 ] = Vec3d( aabb.m_max.x, aabb.m_max.y, aabb.m_min.z );
 
 	aabb.m_min += m_offset;
 	aabb.m_max += m_offset;
+
+	for ( int i = 0; i < 8; i++ ) {
+		pts[ i ] = m_orient * pts[ i ];
+		pts[ i ] += m_offset;
+		aabb.Expand( pts[ i ] );
+	}
+
 	return true;
 }
 
@@ -527,8 +544,8 @@ int BoundsCompareZ( const void * a, const void * b ) {
 BoundingVolumeHierarchyNode::BoundingVolumeHierarchyNode
 ====================================================
 */
-BoundingVolumeHierarchyNode::BoundingVolumeHierarchyNode( Hitable ** l, int n, float t0, float t1, Random & rnd ) {
-	const int axis = int( 3.0f * rnd.Get() );
+BoundingVolumeHierarchyNode::BoundingVolumeHierarchyNode( Hitable ** l, int n, float t0, float t1 ) {
+	const int axis = int( 3.0f * Random::Get() );
 	switch ( axis ) {
 		default:
 		case 0: { qsort( l, n, sizeof( Hitable * ), BoundsCompareX ); } break;
@@ -542,8 +559,8 @@ BoundingVolumeHierarchyNode::BoundingVolumeHierarchyNode( Hitable ** l, int n, f
 		m_left = l[ 0 ];
 		m_right = l[ 1 ];
 	} else {
-		m_left = new BoundingVolumeHierarchyNode( l, n / 2, t0, t1, rnd );
-		m_right = new BoundingVolumeHierarchyNode( l + ( n / 2 ), n - ( n / 2 ), t0, t1, rnd );
+		m_left = new BoundingVolumeHierarchyNode( l, n / 2, t0, t1 );
+		m_right = new BoundingVolumeHierarchyNode( l + ( n / 2 ), n - ( n / 2 ), t0, t1 );
 	}
 
 	AABB boundsLeft;
