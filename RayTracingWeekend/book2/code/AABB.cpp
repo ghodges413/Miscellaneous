@@ -37,6 +37,19 @@ void AABB::Expand( const AABB & bounds ) {
 
 /*
 ====================================================
+AABB::Expand
+====================================================
+*/
+void AABB::Expand( const Vec3d & pt ) {
+	for ( int axis = 0; axis < 3; axis++ ) {
+		m_min[ axis ] = ffmin( m_min[ axis ], pt[ axis ] );
+		m_max[ axis ] = ffmax( m_max[ axis ], pt[ axis ] );
+	}
+	assert( IsValid() );
+}
+
+/*
+====================================================
 AABB::Hit
 ====================================================
 */

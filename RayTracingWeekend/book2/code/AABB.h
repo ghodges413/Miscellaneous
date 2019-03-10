@@ -33,6 +33,7 @@ public:
 	}
 
 	void Expand( const AABB & bounds );
+	void Expand( const Vec3d & pt );
 
 	bool Hit( const Ray & ray, float tmin, float tmax ) const;
 	bool IsValid() const;
