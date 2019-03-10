@@ -7,7 +7,6 @@
 #include "Vector.h"
 
 class Ray;
-class Random;
 
 /*
 ====================================================
@@ -30,7 +29,7 @@ public:
 		m_exposure = exposure;
 	}
 
-	void GetRay( float u, float v, Ray & ray, Random & rnd ) const;
+	void GetRay( float u, float v, Ray & ray ) const;
 
 	Vec3d pos;
 	Vec3d fwd;

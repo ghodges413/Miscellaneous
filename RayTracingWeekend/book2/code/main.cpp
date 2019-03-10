@@ -16,6 +16,49 @@
 
 /*
 ====================================================
+CornellBox
+====================================================
+*/
+int CornellBox( BoundingVolumeHierarchyNode ** world ) {
+	const int n = 10;
+	Hitable ** list = new Hitable* [ n ];
+	//HitableList * world = NULL;
+
+	int i = 0;
+	Material * matRed = new Lambertian( new TextureConstant( Vec3d( 1, 0, 0 ) ) );
+	Material * matWhite = new Lambertian( new TextureConstant( Vec3d( 1, 1, 1 ) ) );
+	Material * matGreen = new Lambertian( new TextureConstant( Vec3d( 0, 1, 0 ) ) );
+	Material * matBlue = new Lambertian( new TextureConstant( Vec3d( 0, 0, 1 ) ) );
+	Material * matLight = new MaterialEmittance( NULL, Vec3d( 10.0f ) );
+	Material * matMetal = new Metal( Vec3d( 0.7f, 0.6f, 0.5f ), 0.0f );
+	Material * matGlass = new Dielectric( 1.5f );
+	//matRed = matWhite = matGreen = matBlue = matLight;
+
+	const float s = 2;
+	const float sl = s * 0.2f;
+	list[ i++ ] = new HitableRectYZ( -s, s, -s, s, -s, matBlue );
+	list[ i++ ] = new HitableRectXY( -sl, sl, -sl, sl, s - 0.01f, matLight );
+	list[ i++ ] = new HitableRectXY( -s, s, -s, s, s, matWhite );
+	list[ i++ ] = new HitableRectXY( -s, s, -s, s, -s, matWhite );
+	list[ i++ ] = new HitableRectXZ( -s, s, -s, s, -s, matRed );
+	list[ i++ ] = new HitableRectXZ( -s, s, -s, s, s, matGreen );
+
+	HitableBox * boxA = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 2 ) ), matWhite );
+	HitableBox * boxB = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 1 ) ), matWhite );
+
+	list[ i++ ] = new HitableInstance( Vec3d( -0.75f, -0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), 20 ), boxA );
+	list[ i++ ] = new HitableInstance( Vec3d( 0.75f, 0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), -20 ), boxB );
+
+	list[ i++ ] = new HitableSphere( Vec3d( 0.75f, -0.75f, -1.5f ), 0.5f, matMetal );
+	list[ i++ ] = new HitableSphere( Vec3d( 0.75f, 0.75f, -0.5f ), 0.5f, matGlass );	
+
+	//*world = new HitableList( list, i );
+	*world = new BoundingVolumeHierarchyNode( list, i, 0.0f, 1.0f );
+	return i;
+}
+
+/*
+====================================================
 ColorBackground
 ====================================================
 */
@@ -32,7 +75,7 @@ Vec3d ColorBackground( Vec3d dir ) {
 ColorWorldMaterial
 ====================================================
 */
-Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, Random & rnd, int recurssion, const bool isDayTime = true ) {
+Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, int recurssion, const bool isDayTime = true ) {
 	if ( recurssion > 32 ) {
 		return Vec3d( 0 );
 	}
@@ -42,8 +85,8 @@ Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, Random & rnd, int re
 		Ray scattered;
 		Vec3d attenuation;
 		Vec3d emittance = record.material->Emitted( record.point.x, record.point.y, record.point, record.normal );
-		if ( NULL != record.material && record.material->Scatter( ray, record, attenuation, scattered, rnd ) ) {
-			Vec3d color = ColorWorldMaterial( scattered, world, rnd, recurssion + 1, isDayTime );
+		if ( NULL != record.material && record.material->Scatter( ray, record, attenuation, scattered ) ) {
+			Vec3d color = ColorWorldMaterial( scattered, world, recurssion + 1, isDayTime );
 			color.x *= attenuation.x;
 			color.y *= attenuation.y;
 			color.z *= attenuation.z;
@@ -65,14 +108,13 @@ main
 ====================================================
 */
 int main( int argc, char * argv[] ) {
-// 	char strBuffer[ 1024 ];
-// 
-// 	const int nx = 384 * 2;//512;
-// 	const int ny = 256 * 2;
-// 
-// 	Camera camera( 90, float( nx ) / float( ny ), 5.0f, 1.5f, 1.0f );
-// 	Random random;
-// 
+ 	char strBuffer[ 1024 ];
+
+	const int nx = 512;//384 * 2;//512;
+	const int ny = 512;//256 * 2;
+
+ 	Camera camera( 90, float( nx ) / float( ny ), 5.0f, 1.5f, 1.0f );
+ 
 // 	Perlin::Initialize( random );
 // 
 // 	Targa targaMars;
@@ -80,7 +122,7 @@ int main( int argc, char * argv[] ) {
 // 	targaEarth.Load( "../common/images/earth512.tga", true );
 // 	targaMars.Load( "../common/images/mars512.tga", true );
 
-#if 1
+#if 0
 	//
 	//	Chapter 1 - Monte Carlo Pi (How many times will we do this?)
 	//
@@ -110,7 +152,7 @@ int main( int argc, char * argv[] ) {
 		printf( "Pi stratified = %f\n", pis );
 		printf( "-------------------------------\n" );
 	}
-#elif 1
+#elif 0
 	//
 	//	Chapter 2 - Monte Carlo with probability density functions (importance sampling)
 	//
@@ -148,8 +190,8 @@ int main( int argc, char * argv[] ) {
 			return ( 1.0f / ( 4.0f * pi ) );
 		};
 
-		const int N = 10000;
-		float sum = 0.0f;
+		N = 10000;
+		sum = 0.0f;
 		for ( int i = 0; i < N; i++ ) {
 			Vec3d p = Random::RandomOnSphereSurface();
 			float cosSquared = p.z * p.z;
@@ -159,58 +201,33 @@ int main( int argc, char * argv[] ) {
 		printf( "I = %f\n", integral );
 		printf( "-----------------------\n" );
 	}
-#elif 2
+#elif 1
+
 	//
 	//	Chapter  - Monte Carlo Pi (How many times will we do this?)
 	//
 	{
-		if ( !OpenFileWriteStream( "outputImages/motion.ppm" ) ) {
+		if ( !OpenFileWriteStream( "outputImages/final.ppm" ) ) {
 			return -1;
 		}
 
-//		camera.pos = Vec3d( 9,-3, 2 );
-		camera.pos = Vec3d( 13,-3, 2 );
-		Vec3d lookat = Vec3d( 0, 0, 0 );
+		Vec3d lookat;
+		// 		camera.pos = Vec3d( 278, 278, -800 );
+		// 		lookat = Vec3d( 278, 278, 0 );
+		camera.pos = Vec3d( 6, 0, 0 );
+		lookat = Vec3d( 0 );
 		camera.fwd = ( lookat - camera.pos );
 		camera.fwd.Normalize();
 		camera.left = Vec3d( 0, 0, 1 ).Cross( camera.fwd );
 		camera.left.Normalize();
 		camera.up = camera.fwd.Cross( camera.left );
 		camera.up.Normalize();
-		camera.m_focalPlane = 10.0f;//( lookat - camera.pos ).GetMagnitude();
-		camera.m_aperture = 0;//0.2f;
-		camera.m_fovy = 40.0f;
+		camera.m_focalPlane = 10.0f;
+		camera.m_aperture = 0.0f;//0.2f;
+		camera.m_fovy = 90.0f;
 
-		const int n = 500;
-		Hitable ** list = new Hitable* [ n ];
-		list[ 0 ] = new HitableSphere( Vec3d( 5.0f, 0.0f, -1000.0f ), 1000.0f, new Lambertian( Vec3d( 0.5f, 0.5f, 0.5f ) ) );
-		HitableList * world = NULL;
-		{
-			int i = 1;
-			for ( int a = -11; a < 11; a++ ) {
-				for ( int b = -11; b < 11; b++ ) {
-					float chooseMat = random.Get();
-					Vec3d center( a + 0.9f * random.Get(), b + 0.9f * random.Get(), 0.2f );
-					if ( ( center - Vec3d( 4.0f, 0.2f, 0.0f ) ).GetMagnitude() > 0.9f ) {
-						Material * material = NULL;
-						if ( chooseMat < 0.8f ) {
-							material = new Lambertian( Vec3d( random.Get() * random.Get(), random.Get() * random.Get(), random.Get() * random.Get() ) );
-						} else if ( chooseMat < 0.95f ) {
-							material = new Metal( Vec3d( 0.5f * ( 1.0f + random.Get() ), 0.5f * ( 1.0f + random.Get() ), 0.5f * ( 1.0f + random.Get() ) ), 0.5f * random.Get() );
-						} else {
-							material = new Dielectric( 1.5f );
-						}
-
-						list[ i++ ] = new HitableSphereDynamic( center, Vec3d( 0.0f, 0.0f, random.Get() * 0.5f ), 0.2f, material );
-					}
-				}
-			}
-
-			list[ i++ ] = new HitableSphere( Vec3d( 0, 0, 1 ), 1.0f, new Dielectric( 1.5f ) );
-			list[ i++ ] = new HitableSphere( Vec3d( -4, 0, 1 ), 1.0f, new Lambertian( Vec3d( 0.4f, 0.2f, 0.1f ) ) );
-			list[ i++ ] = new HitableSphere( Vec3d( 4, 0, 1 ), 1.0f, new Metal( Vec3d( 0.7f, 0.6f, 0.5f ), 0.0f ) );
-			world = new HitableList( list, i );
-		}
+		BoundingVolumeHierarchyNode * world = NULL;
+		CornellBox( &world );
 
 		sprintf( strBuffer, "P3\n%i %i\n255\n", nx, ny );
 		WriteFileStream( strBuffer );
@@ -219,13 +236,13 @@ int main( int argc, char * argv[] ) {
 				const int ns = 64;//64;
 				Vec3d colorSum( 0, 0, 0 );
 				for ( int s = 0; s < ns; s++ ) {
-					float u = ( ( float( i ) + random.Get() ) / float( nx ) );
-					float v = ( ( float( j ) + random.Get() ) / float( ny ) );
+					float u = ( ( float( i ) + Random::Get() ) / float( nx ) );
+					float v = ( ( float( j ) + Random::Get() ) / float( ny ) );
 
 					Ray ray;
-					camera.GetRay( u, v, ray, random );
+					camera.GetRay( u, v, ray );
 
-					Vec3d color = ColorWorldMaterial( ray, world, random, 0 );
+					Vec3d color = ColorWorldMaterial( ray, world, 0, false );
 					colorSum += color;
 				}
 				Vec3d color = colorSum / float( ns );
@@ -236,6 +253,9 @@ int main( int argc, char * argv[] ) {
 				int ir = int( 255.99f * color.x );
 				int ig = int( 255.99f * color.y );
 				int ib = int( 255.99f * color.z );
+				ir = ( ir > 255 ) ? 255 : ir;
+				ig = ( ig > 255 ) ? 255 : ig;
+				ib = ( ib > 255 ) ? 255 : ib;
 				sprintf( strBuffer, "%i %i %i\n", ir, ig, ib );
 				WriteFileStream( strBuffer );
 			}
