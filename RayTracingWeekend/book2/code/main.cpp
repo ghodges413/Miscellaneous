@@ -14,6 +14,9 @@
 #include "Perlin.h"
 #include "Targa.h"
 
+Hitable * g_lightSource = NULL;
+const Vec3d g_lightNormal = Vec3d( 0, 0, -1 );
+
 /*
 ====================================================
 CornellBox
@@ -45,6 +48,8 @@ int CornellBox( BoundingVolumeHierarchyNode ** world ) {
 	list[ i++ ] = new HitableRectXZ( -s, s, -s, s, -s, matRed );
 	list[ i++ ] = new HitableRectXZ( -s, s, -s, s, s, matGreen );
 
+	g_lightSource = light;
+
 	HitableBox * boxA = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 2 ) ), matWhite );
 	HitableBox * boxB = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 1 ) ), matWhite );
 
@@ -74,6 +79,27 @@ Vec3d ColorBackground( Vec3d dir ) {
 
 /*
 ====================================================
+RandomPointInHitable
+====================================================
+*/
+Vec3d RandomPointInHitable( const Hitable * hitable, float & areaOfLight ) {
+	AABB bounds;
+	hitable->Bounds( 0.0f, 1.0f, bounds );
+
+	Vec3d rnd = Vec3d( Random::Get(), Random::Get(), Random::Get() );
+	Vec3d pt;
+	pt.x = bounds.m_min.x * ( 1.0f - rnd.x ) + bounds.m_max.x * rnd.x;
+	pt.y = bounds.m_min.y * ( 1.0f - rnd.y ) + bounds.m_max.y * rnd.y;
+	pt.z = bounds.m_min.z * ( 1.0f - rnd.z ) + bounds.m_max.z * rnd.z;
+
+	Vec3d ds = bounds.m_max - bounds.m_min;
+	areaOfLight = ds.x * ds.y;	// Assume the only light is the xy sqare at the top
+
+	return pt;
+}
+
+/*
+====================================================
 ColorWorldMaterial
 ====================================================
 */
@@ -89,6 +115,26 @@ Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, int recurssion, cons
 		float pdf;
 		Vec3d albedo;
 		if ( record.material->Scatter( ray, record, albedo, scattered, pdf ) ) {
+#if 1		// Sample the light directly (Chapter 7)
+			if ( NULL != g_lightSource ) {
+				float areaOfLight = 1.0f;
+				Vec3d ptInLight = RandomPointInHitable( g_lightSource, areaOfLight );
+				Vec3d dirToLight = ptInLight - record.point;
+				float distSquared = dirToLight.DotProduct( dirToLight );
+				dirToLight.Normalize();
+				if ( dirToLight.DotProduct( record.normal ) < 0 ) {
+					return emittance;
+				}
+
+				float cosineToLight = fabsf( dirToLight.z );
+				if ( cosineToLight < 0.0001f ) {
+					return emittance;
+				}
+
+				pdf = distSquared / ( cosineToLight * areaOfLight );
+				scattered = Ray( record.point, ptInLight, ray.m_time );
+			}
+#endif
 			Vec3d attenuation = albedo * record.material->ScatteringPDF( ray, record, scattered ) / pdf;
 			Vec3d color = ColorWorldMaterial( scattered, world, recurssion + 1, isDayTime );
 			color.x *= attenuation.x;
