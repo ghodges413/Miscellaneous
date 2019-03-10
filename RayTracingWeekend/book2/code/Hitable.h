@@ -105,7 +105,7 @@ HitableRectXY
 class HitableRectXY : public Hitable {
 public:
 	HitableRectXY() { m_material = NULL; }
-	HitableRectXY( float _x0, float _x1, float _y0, float _y1, float _k, const Material * mat ) : x0( _x0 ), x1( _x1 ), y0( _y0 ), y1( _y1 ), k( _k ), m_material( mat ) {}
+	HitableRectXY( float _x0, float _x1, float _y0, float _y1, float _k, const Material * mat ) : x0( _x0 ), x1( _x1 ), y0( _y0 ), y1( _y1 ), k( _k ), m_material( mat ) { norm = 0; }
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
 	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override {
 		aabb = AABB( Vec3d( x0, y0, k - 0.01f ), Vec3d( x1, y1, k + 0.01f ) );
@@ -115,6 +115,7 @@ public:
 
 	float x0, x1, y0, y1, k;
 	const Material * m_material;
+	float norm;
 };
 
 /*

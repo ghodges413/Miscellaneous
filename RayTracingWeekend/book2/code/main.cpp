@@ -37,7 +37,9 @@ int CornellBox( BoundingVolumeHierarchyNode ** world ) {
 	const float s = 2;
 	const float sl = s * 0.2f;
 	list[ i++ ] = new HitableRectYZ( -s, s, -s, s, -s, matBlue );
-	list[ i++ ] = new HitableRectXY( -sl, sl, -sl, sl, s - 0.01f, matLight );
+	HitableRectXY * light = new HitableRectXY( -sl, sl, -sl, sl, s - 0.01f, matLight );
+	light->norm = -1;
+	list[ i++ ] = light;
 	list[ i++ ] = new HitableRectXY( -s, s, -s, s, s, matWhite );
 	list[ i++ ] = new HitableRectXY( -s, s, -s, s, -s, matWhite );
 	list[ i++ ] = new HitableRectXZ( -s, s, -s, s, -s, matRed );
@@ -49,8 +51,8 @@ int CornellBox( BoundingVolumeHierarchyNode ** world ) {
 	list[ i++ ] = new HitableInstance( Vec3d( -0.75f, -0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), 20 ), boxA );
 	list[ i++ ] = new HitableInstance( Vec3d( 0.75f, 0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), -20 ), boxB );
 
-	list[ i++ ] = new HitableSphere( Vec3d( 0.75f, -0.75f, -1.5f ), 0.5f, matMetal );
-	list[ i++ ] = new HitableSphere( Vec3d( 0.75f, 0.75f, -0.5f ), 0.5f, matGlass );	
+// 	list[ i++ ] = new HitableSphere( Vec3d( 0.75f, -0.75f, -1.5f ), 0.5f, matMetal );
+// 	list[ i++ ] = new HitableSphere( Vec3d( 0.75f, 0.75f, -0.5f ), 0.5f, matGlass );
 
 	//*world = new HitableList( list, i );
 	*world = new BoundingVolumeHierarchyNode( list, i, 0.0f, 1.0f );
@@ -83,14 +85,16 @@ Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, int recurssion, cons
 	hitRecord_t record;
 	if ( world->Hit( ray, 0.0f, 10000.0f, record ) ) {
 		Ray scattered;
-		Vec3d attenuation;
 		Vec3d emittance = record.material->Emitted( record.point.x, record.point.y, record.point, record.normal );
-		if ( NULL != record.material && record.material->Scatter( ray, record, attenuation, scattered ) ) {
+		float pdf;
+		Vec3d albedo;
+		if ( record.material->Scatter( ray, record, albedo, scattered, pdf ) ) {
+			Vec3d attenuation = albedo * record.material->ScatteringPDF( ray, record, scattered ) / pdf;
 			Vec3d color = ColorWorldMaterial( scattered, world, recurssion + 1, isDayTime );
 			color.x *= attenuation.x;
 			color.y *= attenuation.y;
 			color.z *= attenuation.z;
-			return color + emittance;
+ 			return color + emittance;
 		}
 		
 		return emittance;

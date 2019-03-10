@@ -182,6 +182,12 @@ HitableSquare
 
 
 bool HitableRectXY::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & record ) const {
+	if ( 0 != norm ) {
+		if ( ray.m_direction.z * norm > 0 ) {
+			return false;
+		}
+	}
+
 	float t = ( k - ray.m_point.z ) / ray.m_direction.z;
 	if ( t < tMin || t > tMax ) {
 		return false;

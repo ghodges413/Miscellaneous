@@ -35,3 +35,21 @@ Vec3d Random::RandomOnSphereSurface() {
 	p.Normalize();
 	return p;
 }
+
+/*
+====================================================
+Random::RandomCosineDirection
+====================================================
+*/
+Vec3d Random::RandomCosineDirection() {
+	const float pi = acosf( -1.0f );
+
+	float r1 = Get();
+	float r2 = Get();
+	float z = sqrtf( 1.0f - r2 );
+	float phi = 2.0f * pi * r1;
+	float x = cosf( phi ) * 2.0f * sqrtf( r2 );
+	float y = sinf( phi ) * 2.0f * sqrtf( r2 );
+
+	return Vec3d( x, y, z );
+}

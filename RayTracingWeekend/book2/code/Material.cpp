@@ -8,16 +8,78 @@
 #include "Random.h"
 #include "Texture.h"
 
+
+class OrthonormalBasis {
+public:
+	OrthonormalBasis() {}
+	inline Vec3d operator[]( int i ) const { return axis[ i ]; }
+	Vec3d u() const { return axis[ 0 ]; }
+	Vec3d v() const { return axis[ 1 ]; }
+	Vec3d w() const { return axis[ 2 ]; }
+	Vec3d local( float a, float b, float c ) const { return a * u() + b * v() + c * w(); }
+	Vec3d local( const Vec3d & a ) const { return a.x * u() + a.y * v() + a.z * w(); }
+	void BuildFromW( const Vec3d & );
+
+	Vec3d axis[ 3 ];	
+};
+
+void OrthonormalBasis::BuildFromW( const Vec3d & n ) {
+	axis[ 2 ] = n;
+	axis[ 2 ].Normalize();
+
+	Vec3d a;
+	if ( fabsf( w().x ) > 0.9f ) {
+		a = Vec3d( 0, 1, 0 );
+	} else {
+		a = Vec3d( 1, 0, 0 );
+	}
+
+	axis[ 1 ] = w().Cross( a ).Normalize();
+	axis[ 0 ] = w().Cross( v() );
+}
+
+
 /*
 ====================================================
 Lambertian::Scatter
 ====================================================
 */
-bool Lambertian::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
+bool Lambertian::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & albedo, Ray & scattered, float & pdf ) const {
+#if 0
 	Vec3d target = record.point + record.normal + Random::RandomInUnitSphere();
 	scattered = Ray( record.point, target, ray.m_time );
-	attenuation = m_albedo->Sample( record.point.x, record.point.y, record.point, record.normal );
+	albedo = m_albedo->Sample( record.point.x, record.point.y, record.point, record.normal );
+	const float pi = acosf( -1.0f );
+	pdf = record.normal.DotProduct( scattered.m_direction ) / pi;
 	return true;
+#else
+	const float pi = acosf( -1.0f );
+	OrthonormalBasis uvw;
+	uvw.BuildFromW( record.normal );
+	Vec3d dir = uvw.local( Random::RandomCosineDirection() ).Normalize();
+	scattered = Ray( record.point, dir, ray.m_time );
+	albedo = m_albedo->Sample( record.u, record.v, record.point, record.normal );
+	pdf = uvw.w().DotProduct( scattered.m_direction ) / pi;
+	return true;
+#endif
+}
+
+/*
+====================================================
+Lambertian::ScatteringPDF
+====================================================
+*/
+float Lambertian::ScatteringPDF( const Ray & ray, const hitRecord_t & record, const Ray & scattered ) const {
+	Vec3d dir = scattered.m_direction;
+	dir.Normalize();
+
+	float cosine = record.normal.DotProduct( dir );
+	if ( cosine < 0 ) {
+		cosine = 0;
+	}
+
+	const float pi = acosf( -1.0f );
+	return cosine / pi;
 }
 
 /*
@@ -35,7 +97,7 @@ Vec3d Reflect( const Vec3d & dir, const Vec3d & normal ) {
 Metal::Scatter
 ====================================================
 */
-bool Metal::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
+bool Metal::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, float & pdf ) const {
 	Vec3d reflected = Reflect( ray.m_direction, record.normal );
 	scattered = Ray( record.point, record.point + reflected + m_fuzz * Random::RandomInUnitSphere(), ray.m_time );
 	attenuation = m_albedo;
@@ -66,7 +128,7 @@ bool Refract( const Vec3d & v, const Vec3d & n, float ni_over_nt, Vec3d & refrac
 Dielectric::Scatter
 ====================================================
 */
-bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
+bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, float & pdf ) const {
 	Vec3d outwardNormal;
 	Vec3d reflected = Reflect( ray.m_direction, record.normal );
 
@@ -107,7 +169,7 @@ bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & a
 MaterialEmittance::Scatter
 ====================================================
 */
-bool MaterialEmittance::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
+bool MaterialEmittance::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, float & pdf ) const {
 	return false;
 }
 
@@ -132,7 +194,7 @@ Vec3d MaterialEmittance::Emitted( float u, float v, const Vec3d & p, const Vec3d
 MaterialIsotropic::Scatter
 ====================================================
 */
-bool MaterialIsotropic::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
+bool MaterialIsotropic::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, float & pdf ) const {
 	scattered = Ray( record.point, Random::RandomInUnitSphere(), ray.m_time );
 	attenuation = m_albedo->Sample( record.u, record.v, record.point, record.normal );
 	return true;
