@@ -13,8 +13,8 @@
 Lambertian::Scatter
 ====================================================
 */
-bool Lambertian::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
-	Vec3d target = record.point + record.normal + rnd.RandomInUnitSphere();
+bool Lambertian::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
+	Vec3d target = record.point + record.normal + Random::RandomInUnitSphere();
 	scattered = Ray( record.point, target, ray.m_time );
 	attenuation = m_albedo->Sample( record.point.x, record.point.y, record.point, record.normal );
 	return true;
@@ -35,9 +35,9 @@ Vec3d Reflect( const Vec3d & dir, const Vec3d & normal ) {
 Metal::Scatter
 ====================================================
 */
-bool Metal::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
+bool Metal::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
 	Vec3d reflected = Reflect( ray.m_direction, record.normal );
-	scattered = Ray( record.point, record.point + reflected + m_fuzz * rnd.RandomInUnitSphere(), ray.m_time );
+	scattered = Ray( record.point, record.point + reflected + m_fuzz * Random::RandomInUnitSphere(), ray.m_time );
 	attenuation = m_albedo;
 	return ( scattered.m_direction.DotProduct( record.normal ) > 0.0f );
 }
@@ -66,7 +66,7 @@ bool Refract( const Vec3d & v, const Vec3d & n, float ni_over_nt, Vec3d & refrac
 Dielectric::Scatter
 ====================================================
 */
-bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
+bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
 	Vec3d outwardNormal;
 	Vec3d reflected = Reflect( ray.m_direction, record.normal );
 
@@ -93,7 +93,7 @@ bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & a
 		reflect_prob = 1.0f;
 	}
 
-	if ( rnd.Get() < reflect_prob ) {
+	if ( Random::Get() < reflect_prob ) {
 		scattered = Ray( record.point, record.point + reflected, ray.m_time );
 	} else {
 		scattered = Ray( record.point, record.point + refracted, ray.m_time );
@@ -107,7 +107,7 @@ bool Dielectric::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & a
 MaterialEmittance::Scatter
 ====================================================
 */
-bool MaterialEmittance::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
+bool MaterialEmittance::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
 	return false;
 }
 
@@ -132,8 +132,8 @@ Vec3d MaterialEmittance::Emitted( float u, float v, const Vec3d & p, const Vec3d
 MaterialIsotropic::Scatter
 ====================================================
 */
-bool MaterialIsotropic::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered, Random & rnd ) const {
-	scattered = Ray( record.point, rnd.RandomInUnitSphere(), ray.m_time );
+bool MaterialIsotropic::Scatter( const Ray & ray, const hitRecord_t & record, Vec3d & attenuation, Ray & scattered ) const {
+	scattered = Ray( record.point, Random::RandomInUnitSphere(), ray.m_time );
 	attenuation = m_albedo->Sample( record.u, record.v, record.point, record.normal );
 	return true;
 }
