@@ -125,7 +125,9 @@
     <ClCompile Include="..\code\Material.cpp" />
     <ClCompile Include="..\code\Matrix.cpp" />
     <ClCompile Include="..\code\MatrixOps.cpp" />
+    <ClCompile Include="..\code\OrthonormalBasis.cpp" />
     <ClCompile Include="..\code\Perlin.cpp" />
+    <ClCompile Include="..\code\ProbabilityDensityFunction.cpp" />
     <ClCompile Include="..\code\Quat.cpp" />
     <ClCompile Include="..\code\Random.cpp" />
     <ClCompile Include="..\code\Targa.cpp" />
@@ -140,7 +142,9 @@
     <ClInclude Include="..\code\Material.h" />
     <ClInclude Include="..\code\Matrix.h" />
     <ClInclude Include="..\code\MatrixOps.h" />
+    <ClInclude Include="..\code\OrthonormalBasis.h" />
     <ClInclude Include="..\code\Perlin.h" />
+    <ClInclude Include="..\code\ProbabilityDensityFunction.h" />
     <ClInclude Include="..\code\Quat.h" />
     <ClInclude Include="..\code\Random.h" />
     <ClInclude Include="..\code\Ray.h" />

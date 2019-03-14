@@ -53,3 +53,20 @@ Vec3d Random::RandomCosineDirection() {
 
 	return Vec3d( x, y, z );
 }
+
+/*
+====================================================
+Random::RandomToSphere
+====================================================
+*/
+Vec3d Random::RandomToSphere( float radius, float distSquared ) {
+	const float pi = acosf( -1.0f );
+
+	float r1 = Get();
+	float r2 = Get();
+	float z = 1.0f + r2 * ( sqrtf( 1.0f - radius * radius / distSquared ) - 1.0f );
+	float phi = 2.0f * pi * r1;
+	float x = cosf( phi ) * sqrtf( 1.0f - z * z );
+	float y = sinf( phi ) * sqrtf( 1.0f - z * z );
+	return Vec3d( x, y, z );
+}

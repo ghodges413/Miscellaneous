@@ -5,6 +5,7 @@
 
 #include "Hitable.h"
 #include "Random.h"
+#include "OrthonormalBasis.h"
 #include <stdlib.h>
 
 /*
@@ -60,6 +61,41 @@ bool HitableSphere::Bounds( float t0, float t1, AABB & aabb ) const {
 	aabb.m_max = center + Vec3d( radius );
 	assert( aabb.IsValid() );
 	return true;
+}
+
+/*
+====================================================
+HitableSphere::ValuePDF
+====================================================
+*/
+float HitableSphere::ValuePDF( const Vec3d & origin, const Vec3d & dir, const Vec3d & normal ) const {
+	const float pi = acosf( -1.0f );
+
+	hitRecord_t record;
+	if ( !this->Hit( Ray( origin, origin + dir, 0.0f ), 0.001f, 10000, record ) ) {
+		return 0.0f;
+	}
+
+	Vec3d dir2 = center - origin;
+	float lengthSquared = dir2.DotProduct( dir2 );
+
+	float cosThetaMax = sqrtf( 1.0f - radius * radius / lengthSquared );
+	float solidAngle = 2.0f * pi * ( 1.0f - cosThetaMax );
+	return 1.0f / solidAngle;
+}
+
+/*
+====================================================
+HitableSphere::Random
+====================================================
+*/
+Vec3d HitableSphere::Random( const Vec3d & origin ) const {
+	Vec3d dir = center - origin;
+	float distSquared = dir.DotProduct( dir );
+
+	OrthonormalBasis uvw;
+	uvw.BuildFromW( dir );
+	return uvw.local( Random::RandomToSphere( radius, distSquared ) );
 }
 
 /*
@@ -180,7 +216,11 @@ HitableSquare
 ========================================================================================================
 */
 
-
+/*
+====================================================
+HitableRectXY::Hit
+====================================================
+*/
 bool HitableRectXY::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & record ) const {
 	if ( 0 != norm ) {
 		if ( ray.m_direction.z * norm > 0 ) {
@@ -210,6 +250,72 @@ bool HitableRectXY::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & 
 	}
 	record.point += record.normal * 0.001f;
 	return true;
+}
+
+/*
+====================================================
+HitableRectXY::ValuePDF
+====================================================
+*/
+float HitableRectXY::ValuePDF( const Vec3d & origin, const Vec3d & dir, const Vec3d & normal ) const {
+	const float pi = acosf( -1.0f );
+
+	AABB bounds;
+	Bounds( 0.0f, 1.0f, bounds );
+
+	Vec3d ds = bounds.m_max - bounds.m_min;
+	float areaOfLight = ds.x * ds.y;
+
+	Vec3d dirToLight = dir;//Random( origin );
+	float distSquared = dirToLight.DotProduct( dirToLight );
+	dirToLight.Normalize();
+
+	// Interesting, this really is irrelevant
+// 	if ( dirToLight.DotProduct( normal ) < 0 ) {
+// 		return 0.0f;
+// 	}
+
+	float cosineToLight = fabsf( dirToLight.z );
+	if ( cosineToLight < 0.0001f ) {
+		return 0.0f;
+	}
+
+	// Calculate the probability of hitting this thing
+	// It's the projected of over the surface of a sphere
+#if 0
+	float fluxOfLight = areaOfLight * cosineToLight;
+	float areaOfSphere = 4.0f * pi * distSquared;
+
+	float pdf = fluxOfLight / areaOfSphere;
+	return pdf;
+#else
+	float pdf = distSquared / ( cosineToLight * areaOfLight );
+	return pdf;
+#endif
+}
+
+/*
+====================================================
+HitableRectXY::Random
+Returns a direction that points to a random location in the volume (TODO: change it to surface)
+====================================================
+*/
+Vec3d HitableRectXY::Random( const Vec3d & origin ) const {
+	AABB bounds;
+	Bounds( 0.0f, 1.0f, bounds );
+
+	Vec3d rnd = Vec3d( Random::Get(), Random::Get(), Random::Get() );
+	Vec3d pt;
+	pt.x = bounds.m_min.x * ( 1.0f - rnd.x ) + bounds.m_max.x * rnd.x;
+	pt.y = bounds.m_min.y * ( 1.0f - rnd.y ) + bounds.m_max.y * rnd.y;
+	pt.z = bounds.m_min.z * ( 1.0f - rnd.z ) + bounds.m_max.z * rnd.z;
+
+	Vec3d dir = pt - origin;
+
+// 	Vec3d ds = bounds.m_max - bounds.m_min;
+// 	areaOfLight = ds.x * ds.y;	// Assume the only light is the xy sqare at the top
+
+	return dir;
 }
 
 bool HitableRectXZ::Hit( const Ray & ray, float tMin, float tMax, hitRecord_t & record ) const {
@@ -472,6 +578,34 @@ bool HitableList::Bounds( float t0, float t1, AABB & bounds ) const {
 
 	assert( bounds.IsValid() );
 	return true;
+}
+
+/*
+====================================================
+HitableList::ValuePDF
+====================================================
+*/
+float HitableList::ValuePDF( const Vec3d & origin, const Vec3d & dir, const Vec3d & normal ) const {
+	float weight = 1.0f / (float)num;
+	float sum = 0;
+	for ( int i = 0; i < num; i++ ) {
+		sum += weight * list[ i ]->ValuePDF( origin, dir, normal );
+	}
+	return sum;
+}
+
+/*
+====================================================
+HitableList::Random
+====================================================
+*/
+Vec3d HitableList::Random( const Vec3d & origin ) const {
+	// Choose a random random
+	int randomIdx = (int)( Random::Get() * (float)num );
+	while ( randomIdx >= num ) {
+		randomIdx = (int)( Random::Get() * (float)num );
+	}
+	return list[ randomIdx ]->Random( origin );
 }
 
 /*

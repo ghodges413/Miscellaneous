@@ -39,6 +39,8 @@ class Hitable {
 public:
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const = 0;
 	virtual bool Bounds( float t0, float t1, AABB & aabb ) const = 0;
+	virtual float ValuePDF( const Vec3d & origin, const Vec3d & dir, const Vec3d & normal ) const { return 0.0f; }
+	virtual Vec3d Random( const Vec3d & origin ) const { return Vec3d( 1, 0, 0 ); }
 };
 
 /*
@@ -53,6 +55,8 @@ public:
 	HitableSphere( const Vec3d & pt, const float r, const Material * mat ) : center( pt ), radius( r ), material( mat ) {}
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
 	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override;
+	virtual float ValuePDF( const Vec3d & origin, const Vec3d & dir, const Vec3d & normal ) const override;
+	virtual Vec3d Random( const Vec3d & origin ) const override;
 
 	Vec3d center;
 	float radius;
@@ -112,10 +116,15 @@ public:
 		return true;
 	}
 
+	virtual float ValuePDF( const Vec3d & origin, const Vec3d & dir, const Vec3d & normal ) const override;
+	virtual Vec3d Random( const Vec3d & origin ) const override;
+
 
 	float x0, x1, y0, y1, k;
 	const Material * m_material;
 	float norm;
+
+	hitRecord_t m_hackRecordHitCopy;
 };
 
 /*
@@ -168,6 +177,8 @@ public:
 	HitableList( Hitable ** l, int n ) { list = l; num = n; }
 	virtual bool Hit( const Ray & r, float tMin, float tMax, hitRecord_t & record ) const override;
 	virtual bool Bounds( float t0, float t1, AABB & aabb ) const override;
+	virtual float ValuePDF( const Vec3d & origin, const Vec3d & dir, const Vec3d & normal ) const override;
+	virtual Vec3d Random( const Vec3d & origin ) const override;
 
 	Hitable ** list;
 	int num;

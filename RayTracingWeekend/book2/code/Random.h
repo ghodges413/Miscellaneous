@@ -18,6 +18,7 @@ public:
 	static Vec3d RandomInUnitSphere();
 	static Vec3d RandomOnSphereSurface();
 	static Vec3d RandomCosineDirection();
+	static Vec3d RandomToSphere( float radius, float distSquared );
 
 private:
 	static std::mt19937 m_generator;

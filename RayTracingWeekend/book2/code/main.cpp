@@ -13,9 +13,22 @@
 #include "Camera.h"
 #include "Perlin.h"
 #include "Targa.h"
+#include "ProbabilityDensityFunction.h"
 
-Hitable * g_lightSource = NULL;
-const Vec3d g_lightNormal = Vec3d( 0, 0, -1 );
+HitableList * g_lightSources = NULL;
+
+/*
+====================================================
+DeNAN
+====================================================
+*/
+Vec3d DeNAN( const Vec3d & color ) {
+	Vec3d out = color;
+	if ( out[ 0 ] != out[ 0 ] ) { out[ 0 ] = 0.0f; }
+	if ( out[ 1 ] != out[ 1 ] ) { out[ 1 ] = 0.0f; }
+	if ( out[ 2 ] != out[ 2 ] ) { out[ 2 ] = 0.0f; }
+	return out;
+}
 
 /*
 ====================================================
@@ -47,11 +60,19 @@ int CornellBox( BoundingVolumeHierarchyNode ** world ) {
 	list[ i++ ] = new HitableRectXY( -s, s, -s, s, -s, matWhite );
 	list[ i++ ] = new HitableRectXZ( -s, s, -s, s, -s, matRed );
 	list[ i++ ] = new HitableRectXZ( -s, s, -s, s, s, matGreen );
+	HitableSphere * sphere = new HitableSphere( Vec3d( 0.75f, -1.0f, -1.25f ), 0.75f, matGlass );
+	list[ i++ ] = sphere;
 
-	g_lightSource = light;
+	{
+		Hitable ** listlist = new Hitable * [ 2 ];
+		listlist[ 0 ] = light;
+		listlist[ 1 ] = sphere;
 
-	HitableBox * boxA = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 2 ) ), matWhite );
-	HitableBox * boxB = new HitableBox( AABB( Vec3d( -0.5f, -0.5f, 0.0f ), Vec3d( 0.5f, 0.5f, 1 ) ), matWhite );
+		g_lightSources = new HitableList( listlist, 2 );
+	}
+
+	HitableBox * boxA = new HitableBox( AABB( Vec3d( -0.75f, -0.75f, 0.0f ), Vec3d( 0.75f, 0.75f, 3.0f ) ), matMetal );
+	HitableBox * boxB = new HitableBox( AABB( Vec3d( -0.75f, -0.75f, 0.0f ), Vec3d( 0.75f, 0.75f, 1.5f ) ), matWhite );
 
 	list[ i++ ] = new HitableInstance( Vec3d( -0.75f, -0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), 20 ), boxA );
 	list[ i++ ] = new HitableInstance( Vec3d( 0.75f, 0.75f, -2 ), Matrix::RotationMatrix( Vec3d( 0, 0, 1 ), -20 ), boxB );
@@ -108,21 +129,22 @@ Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, int recurssion, cons
 		return Vec3d( 0 );
 	}
 
-	hitRecord_t record;
-	if ( world->Hit( ray, 0.0f, 10000.0f, record ) ) {
-		Ray scattered;
-		Vec3d emittance = record.material->Emitted( record.point.x, record.point.y, record.point, record.normal );
+	hitRecord_t recordHit;
+	if ( world->Hit( ray, 0.0f, 10000.0f, recordHit ) ) {
+		scatterRecord_t recordScatter;
+		Vec3d emittance = recordHit.material->Emitted( recordHit.point.x, recordHit.point.y, recordHit.point, recordHit.normal );
 		float pdf;
-		Vec3d albedo;
-		if ( record.material->Scatter( ray, record, albedo, scattered, pdf ) ) {
-#if 1		// Sample the light directly (Chapter 7)
+		//Vec3d albedo;
+		Ray scattered;
+		if ( recordHit.material->Scatter( ray, recordHit, recordScatter ) ) {
+#if 0		// Sample the light directly (Chapter 7)
 			if ( NULL != g_lightSource ) {
 				float areaOfLight = 1.0f;
 				Vec3d ptInLight = RandomPointInHitable( g_lightSource, areaOfLight );
-				Vec3d dirToLight = ptInLight - record.point;
+				Vec3d dirToLight = ptInLight - recordHit.point;
 				float distSquared = dirToLight.DotProduct( dirToLight );
 				dirToLight.Normalize();
-				if ( dirToLight.DotProduct( record.normal ) < 0 ) {
+				if ( dirToLight.DotProduct( recordHit.normal ) < 0 ) {
 					return emittance;
 				}
 
@@ -132,10 +154,63 @@ Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, int recurssion, cons
 				}
 
 				pdf = distSquared / ( cosineToLight * areaOfLight );
-				scattered = Ray( record.point, ptInLight, ray.m_time );
+				scattered = Ray( recordHit.point, ptInLight, ray.m_time );
+
+				recordScatter.specularRay = scattered;
+				recordScatter.isSpecular = false;
+			}
+#elif 0
+			// This accurately reproduces the above results (which are correct)
+			ProbabilityDensityFunctionHitable pdfHitable( g_lightSource, recordHit.point, recordHit.normal );
+			ProbabilityDensityFunction * pdf_ptr = &pdfHitable;
+
+			Vec3d dirToLight = pdf_ptr->Generate();
+			Ray scattered = Ray( recordHit.point, dirToLight + recordHit.point, ray.m_time );
+			pdf = pdf_ptr->Value( dirToLight );
+			if ( pdf <= 0.0f ) {
+				return emittance;
+			}
+#elif 0
+			// This one appears to be working now, yay!
+			ProbabilityDensityFunction * pdf_ptr = recordScatter.pdf_ptr;
+
+			Vec3d dirToLight = pdf_ptr->Generate();
+			Ray scattered = Ray( recordHit.point, dirToLight + recordHit.point, ray.m_time );
+			pdf = pdf_ptr->Value( dirToLight );
+			if ( pdf <= 0.0f ) {
+				return emittance;
+			}
+#elif 0
+#elif 0
+#elif 0
+#elif 0
+#elif 0
+#elif 0
+#elif 1
+			if ( recordScatter.isSpecular ) {
+				Vec3d color = ColorWorldMaterial( recordScatter.specularRay, world, recurssion + 1, isDayTime );
+				color.x *= recordScatter.attenuation.x;
+				color.y *= recordScatter.attenuation.y;
+				color.z *= recordScatter.attenuation.z;
+				return color;
+			}
+
+			ProbabilityDensityFunctionHitable pdfHitable( g_lightSources, recordHit.point, recordHit.normal );
+			ProbabilityDensityFunctionMixed pdfMixed( &pdfHitable, recordScatter.pdf_ptr );
+			ProbabilityDensityFunction * pdf_ptr = recordScatter.pdf_ptr;
+			pdf_ptr = &pdfMixed;
+
+
+			Vec3d dirToLight = pdf_ptr->Generate();
+			Ray scattered = Ray( recordHit.point, recordHit.point + dirToLight, ray.m_time );
+			pdf = pdf_ptr->Value( dirToLight );
+			delete recordScatter.pdf_ptr;
+			recordScatter.pdf_ptr = NULL;
+			if ( pdf <= 0.0f ) {
+				return emittance;
 			}
 #endif
-			Vec3d attenuation = albedo * record.material->ScatteringPDF( ray, record, scattered ) / pdf;
+			Vec3d attenuation = recordScatter.attenuation * recordHit.material->ScatteringPDF( ray, recordHit, scattered ) / pdf;
 			Vec3d color = ColorWorldMaterial( scattered, world, recurssion + 1, isDayTime );
 			color.x *= attenuation.x;
 			color.y *= attenuation.y;
@@ -281,9 +356,16 @@ int main( int argc, char * argv[] ) {
 
 		sprintf( strBuffer, "P3\n%i %i\n255\n", nx, ny );
 		WriteFileStream( strBuffer );
+		const int numPixels = nx * ny;
+		int pixelCount = 0;
 		for ( int j = ny - 1; j >= 0; j-- ) {
+			float percentDone = (float)pixelCount / (float)numPixels;
+			printf( "Progress: %f\n", percentDone );
+
 			for ( int i = 0; i < nx; i++ ) {
-				const int ns = 64;//64;
+				++pixelCount;
+
+				const int ns = 640;
 				Vec3d colorSum( 0, 0, 0 );
 				for ( int s = 0; s < ns; s++ ) {
 					float u = ( ( float( i ) + Random::Get() ) / float( nx ) );
@@ -293,9 +375,16 @@ int main( int argc, char * argv[] ) {
 					camera.GetRay( u, v, ray );
 
 					Vec3d color = ColorWorldMaterial( ray, world, 0, false );
-					colorSum += color;
+					colorSum += DeNAN( color );
 				}
 				Vec3d color = colorSum / float( ns );
+
+				// Let's HDR the color image
+				for ( int i = 0; i < 3; i++ ) {
+					const float exposure = 1.0f;
+					color[ i ] = 1.0f - expf( -exposure * color[ i ] );
+				}
+
 
 				// Gamma correct the color
 				color = Vec3d( sqrtf( color.x ), sqrtf( color.y ), sqrtf( color.z ) );
