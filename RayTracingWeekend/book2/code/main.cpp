@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <malloc.h>
+#include <thread>
 #include "Fileio.h"
 #include "Hitable.h"
 #include "Random.h"
@@ -60,7 +61,7 @@ int CornellBox( BoundingVolumeHierarchyNode ** world ) {
 	list[ i++ ] = new HitableRectXY( -s, s, -s, s, -s, matWhite );
 	list[ i++ ] = new HitableRectXZ( -s, s, -s, s, -s, matRed );
 	list[ i++ ] = new HitableRectXZ( -s, s, -s, s, s, matGreen );
-	HitableSphere * sphere = new HitableSphere( Vec3d( 0.75f, -1.0f, -1.25f ), 0.75f, matGlass );
+	HitableSphere * sphere = new HitableSphere( Vec3d( 1.25f, -1.0f, -1.5f ), 0.5f, matGlass );
 	list[ i++ ] = sphere;
 
 	{
@@ -124,7 +125,7 @@ Vec3d RandomPointInHitable( const Hitable * hitable, float & areaOfLight ) {
 ColorWorldMaterial
 ====================================================
 */
-Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, int recurssion, const bool isDayTime = true ) {
+Vec3d ColorWorldMaterial( const Ray & ray, const Hitable * world, int recurssion, const bool isDayTime = true ) {
 	if ( recurssion > 32 ) {
 		return Vec3d( 0 );
 	}
@@ -198,7 +199,7 @@ Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, int recurssion, cons
 			ProbabilityDensityFunctionHitable pdfHitable( g_lightSources, recordHit.point, recordHit.normal );
 			ProbabilityDensityFunctionMixed pdfMixed( &pdfHitable, recordScatter.pdf_ptr );
 			ProbabilityDensityFunction * pdf_ptr = recordScatter.pdf_ptr;
-			pdf_ptr = &pdfMixed;
+			//pdf_ptr = &pdfMixed;
 
 
 			Vec3d dirToLight = pdf_ptr->Generate();
@@ -229,6 +230,51 @@ Vec3d ColorWorldMaterial( const Ray & ray, Hitable * world, int recurssion, cons
 
 /*
 ====================================================
+ThreadedRayCasts
+====================================================
+*/
+
+struct threadData_t {
+	threadData_t() {}
+	int width;
+	int height;
+	int numSamples;
+	int threadID;
+	int numThreads;
+	const Camera * camera;
+	const BoundingVolumeHierarchyNode * world;
+	Vec3d * color_ptr;
+};
+
+void ThreadedRayCasts( threadData_t data ) {
+	for ( int y = data.threadID; y < data.height; y += data.numThreads ) {
+		if ( 0 == data.threadID ) {
+			float percentDone = (float)y / (float)data.height;
+			printf( "Progress: %f\n", percentDone );
+		}
+
+		for ( int x = 0; x < data.width; x++ ) {
+			Vec3d colorSum( 0, 0, 0 );
+			for ( int s = 0; s < data.numSamples; s++ ) {
+				float u = ( ( float( x ) + Random::Get() ) / float( data.width ) );
+				float v = ( ( float( y ) + Random::Get() ) / float( data.height ) );
+
+				Ray ray;
+				data.camera->GetRay( u, v, ray );
+
+				Vec3d color = ColorWorldMaterial( ray, data.world, 0, false );
+				colorSum += DeNAN( color );
+			}
+			Vec3d color = colorSum / float( data.numSamples );
+
+			int idx = x + data.width * y;
+			data.color_ptr[ idx ] = color;
+		}
+	}
+}
+
+/*
+====================================================
 main
 ====================================================
 */
@@ -237,6 +283,7 @@ int main( int argc, char * argv[] ) {
 
 	const int nx = 512;//384 * 2;//512;
 	const int ny = 512;//256 * 2;
+	const int ns = 640;
 
  	Camera camera( 90, float( nx ) / float( ny ), 5.0f, 1.5f, 1.0f );
  
@@ -354,37 +401,82 @@ int main( int argc, char * argv[] ) {
 		BoundingVolumeHierarchyNode * world = NULL;
 		CornellBox( &world );
 
+		Vec3d * pixels = new Vec3d[ nx * ny ];
+
+		// Get the number of available hardware threads
+		const unsigned int numThreads = std::thread::hardware_concurrency();
+		printf( "Number of Hardware Threads: %i\n", numThreads );
+
+		if ( 0 == numThreads ) {
+			const int numPixels = nx * ny;
+			int pixelCount = 0;
+			for ( int j = ny - 1; j >= 0; j-- ) {
+				float percentDone = (float)pixelCount / (float)numPixels;
+				printf( "Progress: %f\n", percentDone );
+
+				for ( int i = 0; i < nx; i++ ) {
+					++pixelCount;
+
+					Vec3d colorSum( 0, 0, 0 );
+					for ( int s = 0; s < ns; s++ ) {
+						float u = ( ( float( i ) + Random::Get() ) / float( nx ) );
+						float v = ( ( float( j ) + Random::Get() ) / float( ny ) );
+
+						Ray ray;
+						camera.GetRay( u, v, ray );
+
+						Vec3d color = ColorWorldMaterial( ray, world, 0, false );
+						colorSum += DeNAN( color );
+					}
+					Vec3d color = colorSum / float( ns );
+
+					int idx = i + nx * j;
+					pixels[ idx ] = color;
+				}
+			}
+		} else {
+			std::thread * threads = new std::thread[ numThreads ];
+			threadData_t * data = new threadData_t[ numThreads ];
+
+			// Launch threads
+			for ( int i = 0; i < numThreads; i++ ) {
+				data[ i ].width = nx;
+				data[ i ].height = ny;
+				data[ i ].numSamples = ns;
+				data[ i ].threadID = i;
+				data[ i ].numThreads = numThreads;
+				data[ i ].camera = &camera;
+				data[ i ].world = world;
+				data[ i ].color_ptr = pixels;
+
+				threads[ i ] = std::thread( ThreadedRayCasts, data[ i ] );
+			}
+
+			// Wait for threads to finish
+			for ( int i = 0; i < numThreads; i++ ) {
+				threads[ i ].join();
+			}
+
+			delete[] threads;
+			delete[] data;
+		}
+
+		//
+		//	Write out the color buffer
+		//
 		sprintf( strBuffer, "P3\n%i %i\n255\n", nx, ny );
 		WriteFileStream( strBuffer );
-		const int numPixels = nx * ny;
-		int pixelCount = 0;
+
 		for ( int j = ny - 1; j >= 0; j-- ) {
-			float percentDone = (float)pixelCount / (float)numPixels;
-			printf( "Progress: %f\n", percentDone );
-
 			for ( int i = 0; i < nx; i++ ) {
-				++pixelCount;
-
-				const int ns = 640;
-				Vec3d colorSum( 0, 0, 0 );
-				for ( int s = 0; s < ns; s++ ) {
-					float u = ( ( float( i ) + Random::Get() ) / float( nx ) );
-					float v = ( ( float( j ) + Random::Get() ) / float( ny ) );
-
-					Ray ray;
-					camera.GetRay( u, v, ray );
-
-					Vec3d color = ColorWorldMaterial( ray, world, 0, false );
-					colorSum += DeNAN( color );
-				}
-				Vec3d color = colorSum / float( ns );
+				int idx = i + nx * j;
+				Vec3d color = pixels[ idx ];
 
 				// Let's HDR the color image
 				for ( int i = 0; i < 3; i++ ) {
 					const float exposure = 1.0f;
 					color[ i ] = 1.0f - expf( -exposure * color[ i ] );
 				}
-
 
 				// Gamma correct the color
 				color = Vec3d( sqrtf( color.x ), sqrtf( color.y ), sqrtf( color.z ) );
