@@ -269,43 +269,6 @@ bool IsPointInPolyhedra( const Vec3d & pt, const plane_t * planes, const int num
 
 /*
 ====================================================
-BuildPolyhedra
-====================================================
-*/
-// bool BuildPolyhedra( const Vec3d * pts, const int numPoints ) {
-// 	// As we build the polyhedra check if origin is contained inside
-// 	int idxA = FindFurthestPt( pts[ 0 ] * -1.0f, pts, numPoints, -1 );
-// 
-// 	Vec3d ptA = pts[ idxA ];
-// 
-// 	int idxB = FindFurthestPt( ptA * -1.0f, pts, numPoints, idxA );
-// 
-// 	Vec3d ptB = pts[ idxB ];
-// 
-// 	Vec3d ptC = ClosestPointOnLine( ptA, ptB, Vec3d( 0 ) );
-// 	int idxC = FindFurthestPt( ptC * -1.0f, pts, numPoints, idxA );
-// 	if ( idxC == idxB ) {
-// 		idxC = FindFurthestPt( ptC * 1.0f, pts, numPoints, idxA );
-// 	}
-// 
-// 	ptC = pts[ idxC ];
-// 
-// 	Vec3d ptD = ClosestPointOnPlane( ptA, ptB, ptC, Vec3d( 0 ) );
-// 	int idxD = FindFurthestPt( ptD * -1.0f, pts, numPoints, idxA );
-// 	ptD = pts[ idxD ];
-// 
-// 	plane_t planes[ 4 ];
-// 	Tetrahedron( ptA, ptB, ptC, ptD, planes );
-// 	IsPointInPolyhedra( Vec3d( 0 ), planes, 4 );
-// 
-// 	// We now have our first simplex.  We should check if the origin is inside this polytope.
-// 	// If it is, then we're done!  If it isn't... well, fuck my asshole raw.
-// 
-// 	return false;
-// }
-
-/*
-====================================================
 Support
 The support function returns the point in the minkowski
 "difference" that is furthest in a particular direction.

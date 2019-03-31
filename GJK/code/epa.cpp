@@ -18,7 +18,6 @@ plane_t
 
 ========================================================================================================
 */
-
 struct plane_t {
 	Vec3d m_pts[ 3 ];
 	Vec3d m_normal;
@@ -77,7 +76,11 @@ struct plane_t {
 	}
 };
 
-
+/*
+====================================================
+Tetrahedron
+====================================================
+*/
 void Tetrahedron( const Vec3d & ptA, const Vec3d & ptB, const Vec3d & ptC, const Vec3d & ptD, plane_t planes[ 4 ] ) {
 	planes[ 0 ] = plane_t( ptA, ptB, ptC );
 	planes[ 1 ] = plane_t( ptA, ptB, ptD );
@@ -190,14 +193,14 @@ float EPA( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int num
 	return minDist;
 }
 
-struct face_t {
+/*
+====================================================
+EPA2_r
+ExpandingPolytopeAlgorithm
 
-};
-
-struct polytope_t {
-
-};
-
+This is currently only built for intersecting polytopes
+====================================================
+*/
 void EPA2_r( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int numB, plane_t * polytope, int & numPlanes, int planeIdx, const int maxPlanes ) {
 	if ( numPlanes + 3 > maxPlanes ) {
 		printf( "Warning!  Ran out of planes!\n" );
@@ -417,12 +420,20 @@ void EPA2_r( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int n
 		EPA2_r( ptsA, numA, ptsB, numB, polytope, numPlanes, indices[ 2 ], maxPlanes );
 	}
 }
+
+/*
+====================================================
+EPA2
+ExpandingPolytopeAlgorithm
+
+This is currently only built for intersecting polytopes
+====================================================
+*/
 float EPA2( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, int numB, const Vec3d * polytope0 ) {
 	const int maxPlanes = 128;
 	plane_t planes[ maxPlanes ];
 
-	plane_t testPlane = plane_t( Vec3d( -1, 1, 1 ), Vec3d( 1, 1, 1 ), Vec3d( 1, -1, -1 ) );
-
+#if 1	// Enable this to test the algorithm with a simple dataset
 	Vec3d pts[ 4 ];
 	pts[ 0 ] = Vec3d( 1, 1, 1 );
 	pts[ 1 ] = Vec3d( -1, 1, 1 );
@@ -434,13 +445,17 @@ float EPA2( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, int numB, co
 	numB = 1;
 
 	Tetrahedron( pts[ 0 ], pts[ 1 ], pts[ 2 ], pts[ 3 ], planes );
-//	Tetrahedron( polytope0[ 0 ], polytope0[ 1 ], polytope0[ 2 ], polytope0[ 3 ], planes );
+#else
+	Tetrahedron( polytope0[ 0 ], polytope0[ 1 ], polytope0[ 2 ], polytope0[ 3 ], planes );
+#endif
 	int numPlanes = 4;
 
 	EPA2_r( ptsA, numA, ptsB, numB, planes, numPlanes, 0, maxPlanes );
 	EPA2_r( ptsA, numA, ptsB, numB, planes, numPlanes, 1, maxPlanes );
 	EPA2_r( ptsA, numA, ptsB, numB, planes, numPlanes, 2, maxPlanes );
 	EPA2_r( ptsA, numA, ptsB, numB, planes, numPlanes, 3, maxPlanes );
+
+	float minDist = planes[ 0 ].SignedDistanceToPlane( Vec3d( 0 ) );
 
 	for ( int i = 0; i < numPlanes; i++ ) {
 		const plane_t & plane = planes[ i ];
