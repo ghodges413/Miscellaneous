@@ -1,4 +1,4 @@
-# Gilbert-Johnson-Keerth
+# Gilbert-Johnson-Keerthi (GJK)
 
 This is an implementation of the paper 
 "A Fast Procedure for Computing the Distance Between Complex Objects in Three-Dimensional Space"

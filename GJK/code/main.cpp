@@ -65,7 +65,7 @@ int main( int argc, char * argv[] ) {
 	bool doesIntersect = GJK( ptsA, 8, ptsB, 8, polytope );
 	if ( doesIntersect ) {
 		printf( "Intersex!!\n" );
-		float distance = EPA2( ptsA, 8, ptsB, 8, polytope );
+		float distance = EPA3( ptsA, 8, ptsB, 8, polytope );
 		printf( "Closest distance = %f\n", distance );
 	} else {
 		printf( "No intersex!!\n" );
