@@ -69,17 +69,8 @@ bool Simplex1( const Vec3d & ptB, const Vec3d & ptA, Vec3d & newDir ) {
 	// We don't have to worry about the region "behind" B because the algorithm would've failed already.
 	// So instead, we have something that's between [A,B]... so find the direction to the origin that is
 	// also perpendicular to the line between [A,B].
-
-	// These two algorithms should be equivalent. TODO: compare for speed and accuracy.
-#if 0
-	// I bet this is slower because of the sqrt
-	dirAB.Normalize();
-	Vec3d projection = dirAB * dirAB.DotProduct( dirAO );
-	newDir = dirAO - projection;
-#else
 	Vec3d tmp = dirAO.Cross( dirAB );
 	newDir = dirAB.Cross( tmp );
-#endif
 
 	if ( newDir.GetLengthSqr() < 0.0001f ) {
 		// It's co-linear, which means it intersects
