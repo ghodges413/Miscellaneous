@@ -76,196 +76,6 @@ struct plane_t {
 	}
 };
 
-/*
-====================================================
-MinkowskiSum
-====================================================
-*/
-int MinkowskiSum( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int numB, Vec3d ** output ) {
-	int numSum = numA * numB;
-	*output = new Vec3d[ numSum ];
-	for ( int i = 0; i < numA; i++ ) {
-		const Vec3d a = ptsA[ i ];
-
-		for ( int j = 0; j < numB; j++ ) {
-			const Vec3d b = ptsB[ j ];
-
-			(*output)[ i * numA + j ] = a + b;
-		}
-	}
-
-	return numSum;
-}
-
-/*
-====================================================
-MinkowskiDifference
-====================================================
-*/
-int MinkowskiDifference( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int numB, Vec3d ** output ) {
-	int numSum = numA * numB;
-	*output = new Vec3d[ numSum ];
-	for ( int i = 0; i < numA; i++ ) {
-		const Vec3d a = ptsA[ i ];
-
-		for ( int j = 0; j < numB; j++ ) {
-			const Vec3d b = ptsB[ j ];
-
-			(*output)[ i * numA + j ] = a - b;
-		}
-	}
-
-	return numSum;
-}
-
-/*
-====================================================
-FindFurthestPt
-====================================================
-*/
-int FindFurthestPt( const Vec3d & start, const Vec3d & dir, const Vec3d * pts, const int numPoints, const int ignoreIdx ) {
-	int index = 0;
-	float maxDistSqr = dir.DotProduct( pts[ 0 ] - start );
-
-	for ( int i = 0; i < numPoints; i++ ) {
-		if ( ignoreIdx == i ) {
-			continue;
-		}
-
-		float distSqr = dir.DotProduct( pts[ i ] - start );
-		if ( distSqr > maxDistSqr ) {
-			index = i;
-		}
-	}
-
-	return index;
-}
-int FindFurthestPt( const Vec3d & dir, const Vec3d * pts, const int numPoints, const int ignoreIdx ) {
-	int index = 0;
-	float maxDistSqr = dir.DotProduct( pts[ 0 ] );
-
-	for ( int i = 0; i < numPoints; i++ ) {
-		if ( ignoreIdx == i ) {
-			continue;
-		}
-
-		float distSqr = dir.DotProduct( pts[ i ] );
-		if ( distSqr > maxDistSqr ) {
-			index = i;
-		}
-	}
-
-	return index;
-}
-
-/*
-====================================================
-PlaneFromPoints
-====================================================
-*/
-bool PlaneFromPoints( const Vec3d & ptA, const Vec3d & ptB, const Vec3d & ptC, Vec3d & planePt, Vec3d & planeNormal ) {
-	// Make sure these points aren't co-linear
-	Vec3d ab = ptB - ptA;
-	Vec3d ac = ptC - ptA;
-	ab.Normalize();
-	ac.Normalize();
-
-	planeNormal = ab.Cross( ac );
-	float area = planeNormal.GetLengthSqr();
-	if ( area < 0.00001f ) {
-		// It's very co-linear... pick a different third point
-		printf( "Warning co-linear!  Learn to deal!" );
-		return false;
-	}
-
-	planeNormal.Normalize();
-
-	// Find the point on the plane closest to the origin
-	const Vec3d origin = Vec3d( 0 );
-	Vec3d aorigin = origin - ptA;
-	float dist = planeNormal.DotProduct( aorigin );
-	planePt = origin + planeNormal * dist;
-// 	planeNormal = planePt * -1.0f;
-// 	planeNormal.Normalize();
-	return false;
-}
-
-/*
-====================================================
-DoesContainOrigin
-====================================================
-*/
-bool DoesContainOrigin( const Vec3d * pts, const int numPoints ) {
-	// Choose a random point in the set and start there
-	Vec3d ptA = pts[ 0 ];
-	Vec3d dir = ptA * -1.0f;	// point the direction towards the origin
-	dir.Normalize();	// This isn't necessary
-
-	Vec3d ptB;
-	for ( int i = 1; i < numPoints; i++ ) {
-		ptB = pts[ i ];
-		if ( ( ptB - ptA ).GetLengthSqr() > 0.001f ) {
-			break;
-		}
-	}
-
-	int idx = FindFurthestPt( ptA, dir, pts, numPoints, 1 );
-	Vec3d ptC = pts[ idx ];
-
-	// Make sure these points aren't co-linear
-	Vec3d ab = ptB - ptA;
-	Vec3d ac = ptC - ptA;
-	ab.Normalize();
-	ac.Normalize();
-
-	float area = ab.Cross( ac ).GetLengthSqr();
-	if ( area < 0.00001f ) {
-		// It's very co-linear... pick a different third point
-		printf( "Warning co-linear!  Learn to deal!" );
-		assert( 0 );
-		return false;
-	}
-
-	Vec3d planePt;
-	Vec3d planeNormal;
-	bool success = PlaneFromPoints( ptA, ptB, ptC, planePt, planeNormal );
-	if ( !success ) {
-		printf( "we are failures!\n" );
-		assert( 0 );
-		return false;
-	}
-
-	// Find the next furthest pt and we should have a tetrahedron
-	idx = FindFurthestPt( planePt, planeNormal, pts, numPoints, 0 );
-
-
-	return false;
-}
-
-/*
-====================================================
-ClosestPointOnLine
-====================================================
-*/
-Vec3d ClosestPointOnLine( const Vec3d & ptA, const Vec3d & ptB, const Vec3d & pt ) {
-	Vec3d rayToPt = pt - ptA;
-	Vec3d dir = ptB - ptA;
-	dir.Normalize();
-
-	// Project the rayToPt onto the dir
-	Vec3d ptC = ptA + dir * dir.DotProduct( rayToPt );
-	return ptC;
-}
-
-bool IsPointInPolyhedra( const Vec3d & pt, const plane_t * planes, const int numPlanes ) {
-	for ( int i = 0; i < numPlanes; i++ ) {
-		if ( planes[ i ].Normal().DotProduct( pt - planes[ i ].m_pts[ 0 ] ) > 0.0f ) {
-			return false;
-		}
-	}
-
-	return true;
-}
 
 /*
 ====================================================
@@ -510,7 +320,6 @@ bool GJK( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int numB
 	const Vec3d origin( 0 );
 
 	int numPts = 1;
-	//Vec3d simplexPoints[ 4 ];	// 4 is the maximum number of simplex points we need at any given moment
 	simplexPoints[ 0 ] = Support( ptsA, numA, ptsB, numB, Vec3d( 1, 1, 1 ) );
 
 	Vec3d newDir = simplexPoints[ 0 ] * -1.0f;
@@ -529,7 +338,7 @@ bool GJK( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int numB
 		}
 
 		simplexPoints[ numPts ] = newPt;
-		numPts++;// = std::min( numSimplexPts + 1, 3 );	// max points are 4, and we always put the new point on the top of the stack
+		numPts++;
 		printf( "Num points: %i\n", numPts );
 	} while ( !Simplex( simplexPoints, numPts, newDir ) );
 

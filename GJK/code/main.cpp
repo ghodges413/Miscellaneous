@@ -58,21 +58,14 @@ int main( int argc, char * argv[] ) {
 		ptsB[ i ] += offset;
 	}
 
-	Vec3d * minkowski = NULL;
-// 	int numPoints = MinkowskiDifference( ptsA, 8, ptsB, 8, &minkowski );
-// 	BuildPolyhedra( minkowski, numPoints );
-	Vec3d polytope[ 4 ];
-	bool doesIntersect = GJK( ptsA, 8, ptsB, 8, polytope );
+	Vec3d simplex[ 4 ];
+	bool doesIntersect = GJK( ptsA, 8, ptsB, 8, simplex );
 	if ( doesIntersect ) {
 		printf( "Intersects!!\n" );
-		float distance = EPA( ptsA, 8, ptsB, 8, polytope );
+		float distance = EPA( ptsA, 8, ptsB, 8, simplex );
 		printf( "Closest distance = %f\n", distance );
 	} else {
 		printf( "No intersects!!\n" );
-	}
-	if ( NULL != minkowski ) {
-		delete[] minkowski;
-		minkowski = NULL;
 	}
 
 	return 0;
