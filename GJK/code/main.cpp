@@ -58,7 +58,7 @@ int main( int argc, char * argv[] ) {
 		ptsB[ i ] += offset;
 	}
 
-	Vec3d simplex[ 4 ];
+	point_t simplex[ 4 ];
 	bool doesIntersect = GJK( ptsA, 8, ptsB, 8, simplex );
 	if ( doesIntersect ) {
 		printf( "Intersects!!\n" );

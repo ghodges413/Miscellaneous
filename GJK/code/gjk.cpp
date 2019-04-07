@@ -19,8 +19,10 @@ The support function returns the point in the minkowski
 In this case, our minkowski sum is A - B
 ====================================================
 */
-Vec3d Support( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int numB, Vec3d dir ) {
+point_t Support( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int numB, Vec3d dir ) {
 	// Find the point in A furthest in direction
+	point_t point;
+
 	Vec3d maxA = ptsA[ 0 ];
 	float maxDist = dir.DotProduct( maxA );
 	for ( int i = 0; i < numA; i++ ) {
@@ -29,6 +31,7 @@ Vec3d Support( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int
 		if ( dist > maxDist ) {
 			maxDist = dist;
 			maxA = ptsA[ i ];
+			point.idxA = i;
 		}
 	}
 
@@ -43,11 +46,13 @@ Vec3d Support( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int
 		if ( dist > maxDist ) {
 			maxDist = dist;
 			maxB = ptsB[ i ];
+			point.idxB = i;
 		}
 	}
 
 	// Return the point, in the minkowski sum, furthest in the direction
-	return ( maxA - maxB );
+	point.xyz = maxA - maxB;
+	return point;
 }
 
 /*
@@ -156,16 +161,16 @@ bool Simplex2( const Vec3d & ptC, const Vec3d & ptB, const Vec3d & ptA, Vec3d & 
 Simplex3
 ====================================================
 */
-bool Simplex3( Vec3d * pts, Vec3d & newDir ) {
-	const Vec3d & ptD = pts[ 0 ];
-	const Vec3d & ptC = pts[ 1 ];
-	const Vec3d & ptB = pts[ 2 ];
-	const Vec3d & ptA = pts[ 3 ];
+bool Simplex3( point_t * pts, Vec3d & newDir ) {
+	const point_t & ptD = pts[ 0 ];
+	const point_t & ptC = pts[ 1 ];
+	const point_t & ptB = pts[ 2 ];
+	const point_t & ptA = pts[ 3 ];
 
-	const Vec3d dirAO = Vec3d( 0 ) - ptA;
-	const Vec3d dirAB = ptB - ptA;
-	const Vec3d dirAC = ptC - ptA;
-	const Vec3d dirAD = ptD - ptA;
+	const Vec3d dirAO = Vec3d( 0 ) - ptA.xyz;
+	const Vec3d dirAB = ptB.xyz - ptA.xyz;
+	const Vec3d dirAC = ptC.xyz - ptA.xyz;
+	const Vec3d dirAD = ptD.xyz - ptA.xyz;
 
 	Vec3d normalABC = dirAB.Cross( dirAC );
 	if ( normalABC.DotProduct( dirAD ) > 0.0f ) {
@@ -189,21 +194,21 @@ bool Simplex3( Vec3d * pts, Vec3d & newDir ) {
 	// or outside one of the triangles containing A.  Actually, it probably
 	// can exist in the region "above" A.
 	if ( normalABC.DotProduct( dirAO ) > 0.0f ) {
-		Simplex2( ptC, ptB, ptA, newDir );
+		Simplex2( ptC.xyz, ptB.xyz, ptA.xyz, newDir );
 		// put A in D, we can throw away D
 		pts[ 0 ] = ptA;
 		return false;
 	}
 
 	if ( normalACD.DotProduct( dirAO ) > 0.0f ) {
-		Simplex2( ptD, ptC, ptA, newDir );
+		Simplex2( ptD.xyz, ptC.xyz, ptA.xyz, newDir );
 		// put A in B, we can throw away B
 		pts[ 2 ] = ptA;
 		return false;
 	}
 
 	if ( normalADB.DotProduct( dirAO ) > 0.0f ) {
-		Simplex2( ptB, ptD, ptA, newDir );
+		Simplex2( ptB.xyz, ptD.xyz, ptA.xyz, newDir );
 		// put A in C, we can throw away C
 		pts[ 1 ] = ptA;
 		return false;
@@ -218,14 +223,14 @@ bool Simplex3( Vec3d * pts, Vec3d & newDir ) {
 Simplex
 ====================================================
 */
-bool Simplex( Vec3d * pts, const int num, Vec3d & newDir ) {
+bool Simplex( point_t * pts, const int num, Vec3d & newDir ) {
 	switch ( num ) {
 		default:
 		case 2: {
-			return Simplex1( pts[ 0 ], pts[ 1 ], newDir );
+			return Simplex1( pts[ 0 ].xyz, pts[ 1 ].xyz, newDir );
 		} break;
 		case 3: {
-			return Simplex2( pts[ 0 ], pts[ 1 ], pts[ 2 ], newDir );
+			return Simplex2( pts[ 0 ].xyz, pts[ 1 ].xyz, pts[ 2 ].xyz, newDir );
 		} break;
 		case 4: {
 			return Simplex3( pts, newDir );
@@ -241,24 +246,24 @@ GJK
 Gilbert-Johnson-Keerthi
 ====================================================
 */
-bool GJK( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int numB, Vec3d * simplexPoints ) {
+bool GJK( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, const int numB, point_t * simplexPoints ) {
 	const Vec3d origin( 0 );
 
 	int numPts = 1;
 	simplexPoints[ 0 ] = Support( ptsA, numA, ptsB, numB, Vec3d( 1, 1, 1 ) );
 
-	Vec3d newDir = simplexPoints[ 0 ] * -1.0f;
+	Vec3d newDir = simplexPoints[ 0 ].xyz * -1.0f;
 	do {
 		if ( numPts > 3 ) {
 			numPts = 3;
 		}
 
 		// Get the new point to check on
-		Vec3d newPt = Support( ptsA, numA, ptsB, numB, newDir );
+		point_t newPt = Support( ptsA, numA, ptsB, numB, newDir );
 
 		// If this new point hasn't moved passed the origin, then the origin cannot be in the set.
 		// And therefore there is no collision.
-		if ( newDir.DotProduct( newPt - origin ) < 0.0f ) {
+		if ( newDir.DotProduct( newPt.xyz - origin ) < 0.0f ) {
 			return false;
 		}
 

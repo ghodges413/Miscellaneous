@@ -5,20 +5,30 @@
 #pragma once
 #include "Vector.h"
 
- /*
- ========================================================================================================
+struct point_t {
+	Vec3d xyz;
+	int idxA;	// the index of the point in polytope A
+	int idxB;	// the index of the point in polytope B
 
- plane_t
+	bool operator == ( const point_t & rhs ) const {
+		return ( ( idxA == rhs.idxA ) && ( idxB == rhs.idxB ) && ( xyz == rhs.xyz ) );
+	}
+};
 
- ========================================================================================================
- */
+/*
+========================================================================================================
+
+plane_t
+
+========================================================================================================
+*/
 
 struct plane_t {
-	Vec3d m_pts[ 3 ];
+	point_t m_pts[ 3 ];
 	Vec3d m_normal;
 
 	plane_t() {}
-	plane_t( Vec3d a, Vec3d b, Vec3d c ) {
+	plane_t( point_t a, point_t b, point_t c ) {
 		m_pts[ 0 ] = a;
 		m_pts[ 1 ] = b;
 		m_pts[ 2 ] = c;
@@ -32,9 +42,9 @@ struct plane_t {
 	}
 
 	Vec3d Normal() const {
-		const Vec3d & a = m_pts[ 0 ];
-		const Vec3d & b = m_pts[ 1 ];
-		const Vec3d & c = m_pts[ 2 ];
+		const Vec3d & a = m_pts[ 0 ].xyz;
+		const Vec3d & b = m_pts[ 1 ].xyz;
+		const Vec3d & c = m_pts[ 2 ].xyz;
 
 		const Vec3d ab = b - a;
 		const Vec3d ac = c - a;
@@ -45,7 +55,7 @@ struct plane_t {
 	}	
 
 	float SignedDistanceToPlane( const Vec3d & point ) const {
-		const Vec3d dirToPoint = point - m_pts[ 0 ];
+		const Vec3d dirToPoint = point - m_pts[ 0 ].xyz;
 		float distance = Normal().DotProduct( dirToPoint );
 		return distance;
 	}

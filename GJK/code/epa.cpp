@@ -17,29 +17,29 @@
 Tetrahedron
 ====================================================
 */
-void Tetrahedron( const Vec3d & ptA, const Vec3d & ptB, const Vec3d & ptC, const Vec3d & ptD, plane_t planes[ 4 ] ) {
+void Tetrahedron( const point_t & ptA, const point_t & ptB, const point_t & ptC, const point_t & ptD, plane_t planes[ 4 ] ) {
 	planes[ 0 ] = plane_t( ptA, ptB, ptC );
 	planes[ 1 ] = plane_t( ptA, ptB, ptD );
 	planes[ 2 ] = plane_t( ptA, ptD, ptC );
 	planes[ 3 ] = plane_t( ptD, ptB, ptC );
 
 	// If this plane points towards the other point... then flip the normal
-	if ( planes[ 0 ].Normal().DotProduct( ptD - planes[ 0 ].m_pts[ 0 ] ) > 0.0f ) {
+	if ( planes[ 0 ].Normal().DotProduct( ptD.xyz - planes[ 0 ].m_pts[ 0 ].xyz ) > 0.0f ) {
 		planes[ 0 ].FlipNormal();
 	}
 
 	// If this plane points towards the other point... then flip the normal
-	if ( planes[ 1 ].Normal().DotProduct( ptC - planes[ 1 ].m_pts[ 0 ] ) > 0.0f ) {
+	if ( planes[ 1 ].Normal().DotProduct( ptC.xyz - planes[ 1 ].m_pts[ 0 ].xyz ) > 0.0f ) {
 		planes[ 1 ].FlipNormal();
 	}
 
 	// If this plane points towards the other point... then flip the normal
-	if ( planes[ 2 ].Normal().DotProduct( ptB - planes[ 2 ].m_pts[ 0 ] ) > 0.0f ) {
+	if ( planes[ 2 ].Normal().DotProduct( ptB.xyz - planes[ 2 ].m_pts[ 0 ].xyz ) > 0.0f ) {
 		planes[ 2 ].FlipNormal();
 	}
 
 	// If this plane points towards the other point... then flip the normal
-	if ( planes[ 3 ].Normal().DotProduct( ptA - planes[ 3 ].m_pts[ 0 ] ) > 0.0f ) {
+	if ( planes[ 3 ].Normal().DotProduct( ptA.xyz - planes[ 3 ].m_pts[ 0 ].xyz ) > 0.0f ) {
 		planes[ 3 ].FlipNormal();
 	}
 }
@@ -60,10 +60,10 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 
 	plane_t & plane = polytope[ planeIdx ];
 
-	Vec3d newPt = Support( ptsA, numA, ptsB, numB, plane.m_normal );
-	float newPtDist = plane.SignedDistanceToPlane( newPt );
+	point_t newPt = Support( ptsA, numA, ptsB, numB, plane.m_normal );
+	float newPtDist = plane.SignedDistanceToPlane( newPt.xyz );
 	printf( "newPtDist: %f\n", newPtDist );
-	if ( plane.IsCoPlanarOrBehind( newPt ) ) {
+	if ( plane.IsCoPlanarOrBehind( newPt.xyz ) ) {
 		// If the new point is coplanar, then we can't expand this face further
 		printf( "Plane termination.  Plane is an edge on the convex set!\n" );
 		return numPlanes;
@@ -75,7 +75,7 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 	int faceIndices[ 32 ];	// doubt we need it this high
 	int numFaces = 0;
 	for ( int i = 0; i < numPlanes; i++ ) {
-		float dist = polytope[ i ].SignedDistanceToPlane( newPt );
+		float dist = polytope[ i ].SignedDistanceToPlane( newPt.xyz );
 		if ( dist > 0 ) {
 			faceIndices[ numFaces ] = i;
 			numFaces++;
@@ -95,7 +95,7 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 
 		for ( int i = 0; i < 3; i++ ) {
 			plane_t & plane = newPlanes[ i ];
-			if ( plane.Normal().DotProduct( plane.m_pts[ 0 ] ) < 0.0f ) {
+			if ( plane.Normal().DotProduct( plane.m_pts[ 0 ].xyz ) < 0.0f ) {
 				printf( "Warning this should never happen!\n" );
 				plane.FlipNormal();
 			}
@@ -112,7 +112,7 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 		numPlanes += 2;
 	} else if ( numFaces > 1 ) {
 		// Now, we need to get the vertices of these faces
-		Vec3d * faceVerts = (Vec3d *)alloca( 3 * numFaces * sizeof( Vec3d ) );
+		point_t * faceVerts = (point_t *)alloca( 3 * numFaces * sizeof( point_t ) );
 		for ( int i = 0; i < numFaces; i++ ) {
 			int faceIdx = faceIndices[ i ];
 			const plane_t & face = polytope[ faceIdx ];
@@ -133,7 +133,7 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 		};
 
 		struct vertex_t {
-			Vec3d xyz;
+			point_t point;
 			int count;
 		};
 
@@ -142,13 +142,13 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 		int numCollapsed = 0;
 		for ( int faceIdx = 0; faceIdx < numFaces; faceIdx++ ) {
 			for ( int i = 0; i < 3; i++ ) {
-				const Vec3d & vert = faceVerts[ faceIdx * 3 + i ];
+				const point_t & vert = faceVerts[ faceIdx * 3 + i ];
 
 				// Try to find a previously existing one
 				int newVertIdx = 0;
 				bool appendNew = true;
 				for ( int j = 0; j < numCollapsed; j++ ) {
-					if ( collapsedVerts[ j ].xyz == vert ) {
+					if ( collapsedVerts[ j ].point == vert ) {
 						collapsedVerts[ j ].count++;
 						appendNew = false;
 						newVertIdx = j;
@@ -159,7 +159,7 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 				// If it wasn't found, append a new one
 				if ( appendNew ) {
 					newVertIdx = numCollapsed;
-					collapsedVerts[ numCollapsed ].xyz = vert;
+					collapsedVerts[ numCollapsed ].point = vert;
 					collapsedVerts[ numCollapsed ].count = 1;
 					numCollapsed++;
 				}
@@ -179,13 +179,13 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 		}
 
 		// Okay, now we have the starting index;
-		Vec3d * windingVerts = (Vec3d *)alloca( numCollapsed * sizeof( Vec3d ) );
+		point_t * windingVerts = (point_t *)alloca( numCollapsed * sizeof( point_t ) );
 		const int startWindingIdx = lowestIdx;
 		int nextVertIdx = lowestIdx;
 		int numWindingPoints = 1;
 		for ( int i = 0; i < numCollapsed; i++ ) {
 			const vertex_t & collapsedVert = collapsedVerts[ nextVertIdx ];
-			windingVerts[ i ] = collapsedVert.xyz;
+			windingVerts[ i ] = collapsedVert.point;
 
 			int nextVerts[ 32 ];
 			int numPotentialNexts = 0;
@@ -239,7 +239,7 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 			newPlanes[ i ] = plane_t( newPt, windingVerts[ idx0 ], windingVerts[ idx1 ] );
 
 			plane_t & plane = newPlanes[ i ];
-			if ( plane.Normal().DotProduct( plane.m_pts[ 0 ] ) < 0.0f ) {
+			if ( plane.Normal().DotProduct( plane.m_pts[ 0 ].xyz ) < 0.0f ) {
 				printf( "Warning this should never happen!\n" );
 				plane.FlipNormal();
 			}
@@ -267,6 +267,44 @@ int ExpandPolytope( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, cons
 	return numPlanes;
 }
 
+float TriangleArea( const Vec3d & a, const Vec3d & b, const Vec3d & c ) {
+	const Vec3d ab = b - a;
+	const Vec3d ac = c - a;
+	const Vec3d norm = ab.Cross( ac );
+	return norm.GetMagnitude() * 0.5f;
+}
+
+Vec3d BarycentricCoordinates( const Vec3d & a, const Vec3d & b, const Vec3d & c, const Vec3d & pt ) {
+	float areaABC = TriangleArea( a, b, c );
+	float areaPBC = TriangleArea( pt, b, c );
+	float areaPCA = TriangleArea( pt, c, a );
+
+	Vec3d coords;
+	coords.x = areaPBC / areaABC;
+	coords.y = areaPCA / areaABC;
+	coords.z = 1.0f - coords.x - coords.y;
+	return coords;
+}
+
+// From Real-time collision detection
+Vec3d BarycentricCoordinates2( const Vec3d & a, const Vec3d & b, const Vec3d & c, const Vec3d & pt ) {
+	Vec3d v0 = b - a;
+	Vec3d v1 = c - a;
+	Vec3d v2 = pt - a;
+	float d00 = v0.DotProduct( v0 );
+	float d01 = v0.DotProduct( v1 );
+	float d11 = v1.DotProduct( v1 );
+	float d20 = v2.DotProduct( v0 );
+	float d21 = v2.DotProduct( v1 );
+	float denom = d00 * d11 - d01 * d01;
+
+	Vec3d uvw;
+	uvw.y = ( d11 * d20 - d01 * d21 ) / denom;
+	uvw.z = ( d00 * d21 - d01 * d20 ) / denom;
+	uvw.x = 1.0f - uvw.y - uvw.z;
+	return uvw;
+}
+
 /*
 ====================================================
 EPA
@@ -275,26 +313,27 @@ ExpandingPolytopeAlgorithm
 This is currently only built for intersecting polytopes
 ====================================================
 */
-float EPA( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, int numB, const Vec3d * polytope0 ) {
+float EPA( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, int numB, const point_t * simplex ) {
 	const int maxPlanes = 128;
 	plane_t planes[ maxPlanes ];
 
-	Tetrahedron( polytope0[ 0 ], polytope0[ 1 ], polytope0[ 2 ], polytope0[ 3 ], planes );
+	Tetrahedron( simplex[ 0 ], simplex[ 1 ], simplex[ 2 ], simplex[ 3 ], planes );
 	int numPlanes = 4;
 
+	int closestPlaneIdx = 0;
 	float minDist = 0;
 	while ( 1 ) {
-		int closestPlane = 0;
+		closestPlaneIdx = 0;
 		minDist = planes[ 0 ].UnsignedDistanceToPlane( Vec3d( 0 ) );
 		for ( int i = 1; i < numPlanes; i++ ) {
 			float dist = planes[ i ].UnsignedDistanceToPlane( Vec3d( 0 ) );
 			if ( dist < minDist ) {
-				closestPlane = i;
+				closestPlaneIdx = i;
 				minDist = dist;
 			}
 		}
 
-		int newNumPlanes = ExpandPolytope( ptsA, numA, ptsB, numB, planes, numPlanes, closestPlane, maxPlanes );
+		int newNumPlanes = ExpandPolytope( ptsA, numA, ptsB, numB, planes, numPlanes, closestPlaneIdx, maxPlanes );
 		if ( newNumPlanes == numPlanes ) {
 			// no new planes, therefore we are done expanding because we have found the closestPlane
 			numPlanes = newNumPlanes;
@@ -310,6 +349,34 @@ float EPA( const Vec3d * ptsA, const int numA, const Vec3d * ptsB, int numB, con
 		printf( "Distance to origin: %i %f\n", i, dist );
 	}
 
+	// Now that we have the closest plane, we need to determine the point on the plane.
+	// And then we need to calculate the barycentric coordinates of that point
+	const plane_t & closestPlane = planes[ closestPlaneIdx ];
+	Vec3d pt = closestPlane.ProjectPointOntoPlane( Vec3d( 0 ) );
+
+	// Get the barycentric coordinates of the point.  And then use that to get the points on A and B.
+	// pt = A * a + B * b + C * c;
+	// a + b + c = 1
+	//
+	const Vec3d abc = BarycentricCoordinates2( closestPlane.m_pts[ 0 ].xyz, closestPlane.m_pts[ 1 ].xyz, closestPlane.m_pts[ 2 ].xyz, pt );
+
+	const Vec3d & ptA0 = ptsA[ closestPlane.m_pts[ 0 ].idxA ];
+	const Vec3d & ptA1 = ptsA[ closestPlane.m_pts[ 1 ].idxA ];
+	const Vec3d & ptA2 = ptsA[ closestPlane.m_pts[ 2 ].idxA ];
+
+	const Vec3d & ptB0 = ptsB[ closestPlane.m_pts[ 0 ].idxB ];
+	const Vec3d & ptB1 = ptsB[ closestPlane.m_pts[ 1 ].idxB ];
+	const Vec3d & ptB2 = ptsB[ closestPlane.m_pts[ 2 ].idxB ];
+
+	const Vec3d ptOnA = ptA0 * abc.x + ptA1 * abc.y + ptA2 * abc.z;
+	const Vec3d ptOnB = ptB0 * abc.x + ptB1 * abc.y + ptB2 * abc.z;
+
+	const Vec3d delta = ptOnB - ptOnA;
+	printf( "pt on A: %f %f %f\n", ptOnA.x, ptOnA.y, ptOnA.z );
+	printf( "pt on B: %f %f %f\n", ptOnB.x, ptOnB.y, ptOnB.z );
+	printf( "delta: %f %f %f\n", delta.x, delta.y, delta.z );
+	printf( "delta Length: %f\n", delta.GetMagnitude() );
+
 	return minDist;
 }
 
@@ -323,6 +390,7 @@ This is currently only built for intersecting polytopes
 ====================================================
 */
 void TestEPA() {
+#if 0
 	const int maxPlanes = 128;
 	plane_t planes[ maxPlanes ];
 
@@ -379,4 +447,5 @@ void TestEPA() {
 		float dist = plane.SignedDistanceToPlane( Vec3d( 0 ) );
 		printf( "Distance to origin: %i %f\n", i, dist );
 	}
+#endif
 }
