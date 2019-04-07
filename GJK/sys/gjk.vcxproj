@@ -118,12 +118,16 @@
     <ClCompile Include="..\code\epa.cpp" />
     <ClCompile Include="..\code\gjk.cpp" />
     <ClCompile Include="..\code\main.cpp" />
+    <ClCompile Include="..\code\polytope.cpp" />
+    <ClCompile Include="..\code\sat.cpp" />
     <ClCompile Include="..\code\Vector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\code\epa.h" />
     <ClInclude Include="..\code\gjk.h" />
     <ClInclude Include="..\code\plane.h" />
+    <ClInclude Include="..\code\polytope.h" />
+    <ClInclude Include="..\code\sat.h" />
     <ClInclude Include="..\code\Vector.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
