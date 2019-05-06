@@ -5,70 +5,35 @@
 
 /*
 ===============================
-Thread::Thread
-===============================
-*/
-Thread::Thread() :
-m_loopIdle( false ),
-m_work( NULL ) {
-}
-
-/*
-===============================
-Thread::~Thread
-===============================
-*/
-Thread::~Thread() {
-}
-
-/*
-===============================
-Thread::Thread
-===============================
-*/
-ThreadReturnType_t Thread::Main( ThreadInputType_t data ) {
-	// Get the pointer to this thread.
-	Thread * thread_ptr = (Thread *)data;
-
-	// Loop idly until there's work available to do.
-	while ( thread_ptr->m_loopIdle ) {
-		if ( thread_ptr->HasWork() ) {
-			thread_ptr->m_work->m_functor( thread_ptr->m_work->m_data );
-			thread_ptr->m_work = NULL;
-		}
-
-		// I'm sure there's a better way to do this without "sleeping" and using a loop
-		// Let the thread sleep for a second
-		Sleep( 1000 );
-	}
-
-	return NULL;
-}
-
-/*
-===============================
 Thread::Create
 ===============================
 */
-bool Thread::Create() {
-	m_loopIdle = true;
-
+bool Thread::Create( ThreadWorkFunctor * functor, void * data ) {
 #if defined( WINDOWS_THREADS )
+// 	m_threadHandle = CreateThread( 
+// 		NULL,						// default security attributes
+// 		0,							// use default stack size  
+// 		Thread::Main,				// thread function name
+// 		this,						// argument to thread function 
+// 		0,							// use default creation flags 
+// 		&m_dwThreadID );			// returns the thread identifier
 	m_threadHandle = CreateThread( 
 		NULL,						// default security attributes
 		0,							// use default stack size  
-		Thread::Main,				// thread function name
-		this,						// argument to thread function 
+		functor,					// thread function name
+		data,						// argument to thread function 
 		0,							// use default creation flags 
 		&m_dwThreadID );			// returns the thread identifier
 #endif
 
 #if defined( POSIX_THREADS )
-	m_returnCode = pthread_create( &m_threadHandle, NULL, Thread::Main, (void *)this );
+	//m_returnCode = pthread_create( &m_threadHandle, NULL, Thread::Main, (void *)this );
+	m_returnCode = pthread_create( &m_threadHandle, NULL, functor, data );
 #endif
 
 #if defined( STD_THREADS )
-	m_threadHandle = new std::thread( &Thread::Main, this );
+	//m_threadHandle = new std::thread( &Thread::Main, this );
+	m_threadHandle = new std::thread( functor, data );
 #endif
 
 	return true;
@@ -80,8 +45,6 @@ Thread::Join
 ===============================
 */
 void Thread::Join() {
-	m_loopIdle = false;
-
 #if defined( WINDOWS_THREADS )
 	// Wait until this thread has terminated.
 	WaitForMultipleObjects( 1, &m_threadHandle, TRUE, INFINITE );
@@ -101,14 +64,63 @@ void Thread::Join() {
 
 /*
 ===============================
-Thread::SetWork
+Thread::YieldThread
 ===============================
 */
-bool Thread::SetWork( ThreadWork_t * work ) {
-	if ( HasWork() ) {
-		return false;
-	}
+void Thread::YieldThread() {
+#if defined( WINDOWS_THREADS )
+	Yield();
+#endif
 
-	m_work = work;
-	return true;
+#if defined( POSIX_THREADS )
+	pthread_yield();
+#endif
+
+#if defined( STD_THREADS )
+	std::this_thread::yield();
+#endif
+}
+
+/*
+===============================
+Thread::NumHardwareThreads
+===============================
+*/
+unsigned int Thread::NumHardwareThreads() {
+	unsigned int numThreads = 1;
+
+#if defined( WINDOWS_THREADS )
+	SYSTEM_INFO sysinfo;
+	GetSystemInfo( &sysinfo );
+	numThreads = sysinfo.dwNumberOfProcessors;
+#endif
+
+#if defined( POSIX_THREADS )
+//	numThreads = sysconf(_SC_NPROCESSORS_ONLN); // linux
+
+	// osx
+	{
+		int mib[ 4 ];
+		std::size_t len = sizeof( numThreads ); 
+
+		mib[ 0 ] = CTL_HW;
+		mib[ 1 ] = HW_AVAILCPU;
+
+		sysctl( mib, 2, &numThreads, &len, NULL, 0 );
+
+		if ( numThreads < 1 ) {
+			mib[ 1 ] = HW_NCPU;
+			sysctl( mib, 2, &numThreads, &len, NULL, 0 );
+			if ( numThreads < 1 ) {
+				numThreads = 1;
+			}
+		}
+	}
+#endif
+
+#if defined( STD_THREADS )
+	numThreads = std::thread::hardware_concurrency();
+#endif
+
+	return numThreads;
 }

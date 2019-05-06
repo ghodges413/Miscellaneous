@@ -6,11 +6,6 @@
 
 typedef ThreadReturnType_t ThreadWorkFunctor( ThreadInputType_t data );
 
-struct ThreadWork_t {
-	ThreadWorkFunctor m_functor;
-	void * m_data;
-};
-
 /*
 ===============================
 Thread
@@ -22,15 +17,14 @@ private:
 	Thread & operator = ( const Thread & rhs );
 
 public:
-	Thread();
-	~Thread();
+	Thread() {}
+	~Thread() {}
 
-	static ThreadReturnType_t Main( ThreadInputType_t data );	// Loop idle until signaled to close thread
-	bool Create();
+	bool Create( ThreadWorkFunctor * functor, void * data );
 	void Join();
+	void YieldThread();
 
-	bool SetWork( ThreadWork_t * work );
-	bool HasWork() const { return ( NULL != m_work ); }
+	static unsigned int NumHardwareThreads();
 
 private:
 #if defined( WINDOWS_THREADS )
@@ -46,7 +40,4 @@ private:
 #if defined( STD_THREADS )
 	std::thread * m_threadHandle;
 #endif
-
-	bool m_loopIdle;
-	ThreadWork_t * m_work;
 };
