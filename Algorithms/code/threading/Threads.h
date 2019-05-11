@@ -4,7 +4,7 @@
 #pragma once
 #include "Common.h"
 
-typedef ThreadReturnType_t ThreadWorkFunctor( ThreadInputType_t data );
+typedef ThreadReturnType_t ThreadWorkFunctor_t( ThreadInputType_t data );
 
 /*
 ===============================
@@ -20,9 +20,9 @@ public:
 	Thread() {}
 	~Thread() {}
 
-	bool Create( ThreadWorkFunctor * functor, void * data );
+	bool Create( ThreadWorkFunctor_t * functor, void * data );
 	void Join();
-	void YieldThread();
+	static void YieldThread();
 
 	static unsigned int NumHardwareThreads();
 

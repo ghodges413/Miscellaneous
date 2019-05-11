@@ -2,6 +2,7 @@
 //  Mutex.cpp
 //
 #include "Mutex.h"
+#include <stdio.h>
 
 /*
 ===============================
@@ -50,7 +51,9 @@ void Mutex::Lock() {
 
 #if defined( STD_THREADS )
 	m_mutex.lock();
-#endif	
+#endif
+
+//	printf( "Lock acquired\n" );
 }
 
 /*
@@ -70,4 +73,6 @@ void Mutex::Unlock() {
 #if defined( STD_THREADS )
 	m_mutex.unlock();
 #endif
+
+//	printf( "Lock released\n" );
 }

@@ -8,7 +8,7 @@
 Thread::Create
 ===============================
 */
-bool Thread::Create( ThreadWorkFunctor * functor, void * data ) {
+bool Thread::Create( ThreadWorkFunctor_t * functor, void * data ) {
 #if defined( WINDOWS_THREADS )
 // 	m_threadHandle = CreateThread( 
 // 		NULL,						// default security attributes
