@@ -1,6 +1,8 @@
 //
 //  main.cpp
 //
+#include "threading/JobSystem/JobSystem.h"
+
 #include "sorting/bubblesort.h"
 #include "sorting/heapsort.h"
 #include "sorting/insertionsort.h"
@@ -22,6 +24,8 @@ main
 ====================================================
 */
 int main( int argc, char * argv[] ) {
+	TestJobSystem( argc, argv );
+
 	TestBubbleSort( argc, argv );
 	TestHeapSort( argc, argv );
 	TestInsertionSort( argc, argv );
