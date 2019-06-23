@@ -53,10 +53,13 @@ int 0x10                ; Print the value in AL
 mov bx, HELLO_MSG       ; Print the Hello World message from print.asm
 call print_string
 
+mov dx, 0xbadf
+call print_hex
+
 loop:                   ; Defines a label, we'll call it "loop" so that we can call it
 jmp loop                ; jump to loop label, which takes us back to this location and hits the jmp instruction again (infinite loop)
 
-%include "utilities/print.asm" ; Re - use our print_string function
+%include "utilities/print.asm"
 
 message:    db "X"
 
