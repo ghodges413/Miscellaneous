@@ -39,7 +39,7 @@
 ; cs    - code segment - offset for code
 ; ds    - data segment - this is the offset used for addressing general memory (such as strings that we have stored)
 ; ss    - stack segment - this is used to modify the stack base pointer (bp)
-; es    - extra segment - no idea what this is for yet
+; es    - extra segment
 ; fs    - another extra segment - not available in 16-bit real mode
 ; gs    - another extra segment - not available in 16-bit real mode
 
@@ -50,8 +50,13 @@ mov ah, 0x0e            ; int 10/ah = 0eh -> scrolling teletype BIOS routine
 mov al, [message]       ; This loads the value stored at the address into al
 int 0x10                ; Print the value in AL
 
+mov bx, HELLO_MSG       ; Print the Hello World message from print.asm
+call print_string
+
 loop:                   ; Defines a label, we'll call it "loop" so that we can call it
 jmp loop                ; jump to loop label, which takes us back to this location and hits the jmp instruction again (infinite loop)
+
+%include "utilities/print.asm" ; Re - use our print_string function
 
 message:    db "X"
 
