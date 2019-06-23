@@ -11,3 +11,5 @@ https://appusajeev.wordpress.com/2011/01/27/writing-a-16-bit-real-mode-os-nasm/
 "Writing a Simple Operating System from Scratch" by Nick Blundell
 
 https://linuxgazette.net/82/raghu.html
+
+https://github.com/cfenollosa/os-tutorial
