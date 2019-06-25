@@ -50,8 +50,8 @@ end:        mov     bx, HEX_OUT
 ;
 ;   Data
 ;
-HELLO_MSG:      db "Hello, World!", 0       ; Null terminated string
-GOODBYE_MSG:    db "Goodbye!", 0            ; Null terminated string
-HEX_OUT:        db "0x0000", 0
-HEX_TABLE:      db "0123456789ABCDEF", 0
+HELLO_MSG:      db "Hello, World!", 10, 13, 0       ; Null terminated string
+GOODBYE_MSG:    db "Goodbye!", 10, 13, 0            ; Null terminated string
+HEX_OUT:        db "0x0000", 10, 13, 0
+HEX_TABLE:      db "0123456789ABCDEF", 10, 13, 0
 HEX_STRING:     resb  50                    ; reserve 50 bytes for the string
