@@ -3,6 +3,7 @@
 ;
 ;   Compile this file with the command:
 ;       nasm.exe bootloader.asm -f bin -o bootloader.bin
+;       nasm.exe kernel.asm -f bin -o kernel.bin
 ;
 ;   Concatenate multiple files together with the copy command:
 ;       copy /b bootloader.bin+kernel.bin bos16.bin
@@ -48,11 +49,6 @@
 ; fs    - another extra segment - not available in 16-bit real mode
 ; gs    - another extra segment - not available in 16-bit real mode
 
-%define os_address			0x7E00
-%define file_table_address	0x2000
-%define os_sector		    2
-%define file_table_sector	3
-
 [bits 16]               ; Designate that this file should be compiled to 16-bit assembly
 [org 0x7c00]            ; This should designate to the processor that we expect the program to be run at 0x7c00.
 
@@ -79,17 +75,18 @@ mov bx, 0x9000      ; Load 5 sectors to 0x0000(ES):0x9000(BX)
 mov dh, 5           ; from the boot disk.
 mov dl, [BOOT_DRIVE]
 call disk_load
-mov dx, [0x9000]    ; Print out the first loaded word , which
-call print_hex      ; we expect to be 0xdada , stored
-                    ; at address 0 x9000
+mov dx, [0x9000]    ; Print out the first loaded word, which
+call print_hex      ; we expect to be 0xdada, stored
+                    ; at address 0x9000
 mov dx, [0x9000 + 512]  ; Also , print the first word from the
-call print_hex          ; 2nd loaded sector : should be 0 xface
+call print_hex          ; 2nd loaded sector: should be 0xface
+
+jmp 0x9400 ; + 1024     ; The kernel should be in the third loaded sector
 jmp $
 
 %include "utilities/print.asm"
 %include "utilities/diskio.asm"
 
-; Include our new disk_load function
 ; Global variables
 BOOT_DRIVE:     db 0
 message:        db "X"
@@ -107,3 +104,5 @@ dw 0xaa55               ; This is the magic number.  This will be stored in the 
 ; Place added data in this file so that we can test reading from disk                        
 times 256 dw 0xdada
 times 256 dw 0xface
+
+;times 1024-($-$$) db 0  ; Pad out to 1024 bytes, so that the OS code will be in the third sector
