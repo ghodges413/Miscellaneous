@@ -22,7 +22,7 @@ https://github.com/cfenollosa/os-tutorial
 
 
 
-### Memory layout after the power on selft test (POST)
+## Memory layout after the power on selft test (POST)
 ```
 ; 0x000000 - Interrupt Vector Table ( 1 KB )
 ; 0x000400 - BIOS Data Area ( 256 bytes )
@@ -35,7 +35,7 @@ https://github.com/cfenollosa/os-tutorial
 ; 0x100000 - Free for the rest of memory
 ```
 
-###   Registers
+## Registers
 ```
 ; ax - Accumulator register (AX). Used in arithmetic operations
 ; bx - Base register (BX). Used as a pointer to data (located in segment register DS, when in segmented mode).
@@ -59,7 +59,7 @@ https://github.com/cfenollosa/os-tutorial
 ; gs    - another extra segment - not available in 16-bit real mode
 ```
 
-###   Basic Commands
+## Basic Commands
 ```
 ;   db = declare bytes of data
 ;   dw = declare word
