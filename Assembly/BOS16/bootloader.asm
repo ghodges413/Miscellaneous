@@ -16,39 +16,6 @@
 ;   http://www.chrysocome.net/dd
 ;
 
-; Memory layout after the power on selft test (POST)
-;
-; 0x000000 - Interrupt Vector Table ( 1 KB )
-; 0x000400 - BIOS Data Area ( 256 bytes )
-; 0x000500 - Free
-; 0x007C00 - Loaded Boot Sector ( 512 bytes )
-; 0x007E00 - Free
-; 0x09FC00 - Extended BIOS Data Area ( 639 KB )
-; 0x0A0000 - Video Memory ( 128 KB )
-; 0x0C0000 - BIOS ( 256 KB )
-; 0x100000 - Free for the rest of memory
-
-; ax - Accumulator register (AX). Used in arithmetic operations
-; bx - Base register (BX). Used as a pointer to data (located in segment register DS, when in segmented mode).
-; cx - Counter register (CX). Used in shift/rotate instructions and loops.
-; dx - Data register (DX). Used in arithmetic operations and I/O operations.
-
-; si - Source Index register (SI). Used as a pointer to a source in stream operations.
-; di - Destination Index register (DI). Used as a pointer to a destination in stream operations.
-
-; bp is the base pointer, and it points to the base address of the stack
-; sp is the stack pointer, and it grows down (decrements) from the stack's base pointer
-; This means it makes sense to start the stack at the end of avialable memory
-; and let it grow "downwards".
-
-; Segment registers.  These allow us to access more than 64kb of memory when in 16-bit real mode
-; cs    - code segment - offset for code
-; ds    - data segment - this is the offset used for addressing general memory (such as strings that we have stored)
-; ss    - stack segment - this is used to modify the stack base pointer (bp)
-; es    - extra segment
-; fs    - another extra segment - not available in 16-bit real mode
-; gs    - another extra segment - not available in 16-bit real mode
-
 [bits 16]               ; Designate that this file should be compiled to 16-bit assembly
 [org 0x7c00]            ; This should designate to the processor that we expect the program to be run at 0x7c00.
 
@@ -70,7 +37,7 @@ call print_string
 mov [BOOT_DRIVE], dl ; BIOS stores our boot drive in DL , so it ’s
                     ; best to remember this for later.
 mov bp, 0x8000      ; Here we set our stack safely out of the
-mov sp, bp          ; way , at 0x8000
+mov sp, bp          ; way, at 0x8000
 mov bx, 0x9000      ; Load 5 sectors to 0x0000(ES):0x9000(BX)
 mov dh, 5           ; from the boot disk.
 mov dl, [BOOT_DRIVE]
@@ -104,5 +71,3 @@ dw 0xaa55               ; This is the magic number.  This will be stored in the 
 ; Place added data in this file so that we can test reading from disk                        
 times 256 dw 0xdada
 times 256 dw 0xface
-
-;times 1024-($-$$) db 0  ; Pad out to 1024 bytes, so that the OS code will be in the third sector
