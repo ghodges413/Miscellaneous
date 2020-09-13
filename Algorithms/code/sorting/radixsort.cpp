@@ -105,20 +105,18 @@ void RadixSortBase256( int * input, int num ) {
 		output[ i ] = 0;
 	}
 
-	static const int base = 1 << 8;//256;
+	static const int bits = 8;
+	static const int base = 1 << bits;//256;
+	static const int modulus = base - 1;//0xff;
 
-	int digitsToDo = 32 / 8;//4;
+	int digitsToDo = 32 / bits;//4;
 	for ( int d = 0; d < digitsToDo; d++ ) {
 		// Get the counts table
 		int counts[ base ] = { 0 };
 		for ( int i = 0; i < num; i++ ) {
 			int value = input[ i ];
-			for ( int shift = 0; shift < d; shift++ ) {
-				//value /= base; // shift the digits over by d
-				value >>= 8;
-			}
-			//value %= base;
-			value = value & 0xff;
+			value >>= bits * d;	// shift the digits over by d
+			value = value & modulus;
 
 			counts[ value ]++;
 		}
@@ -133,12 +131,8 @@ void RadixSortBase256( int * input, int num ) {
 
 		for ( int i = num - 1; i >= 0; i-- ) {
 			int value = input[ i ];
-			for ( int shift = 0; shift < d; shift++ ) {
-				//value /= base; // shift the digits over by d
-				value >>= 8;
-			}
-			//value %= base;
-			value = value & 0xff;
+			value >>= bits * d;	// shift the digits over by d
+			value = value & modulus;
 
 			int slot = prefixSum[ value ] - 1;
 			prefixSum[ value ]--;
