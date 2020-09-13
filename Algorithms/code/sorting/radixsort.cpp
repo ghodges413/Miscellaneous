@@ -105,9 +105,9 @@ void RadixSortBase256( int * input, int num ) {
 		output[ i ] = 0;
 	}
 
-	static const int base = 256;
+	static const int base = 1 << 8;//256;
 
-	int digitsToDo = 4;
+	int digitsToDo = 32 / 8;//4;
 	for ( int d = 0; d < digitsToDo; d++ ) {
 		// Get the counts table
 		int counts[ base ] = { 0 };
