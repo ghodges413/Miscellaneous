@@ -17,7 +17,36 @@
 #include "allocators/StackAllocator.h"
 #include "allocators/BuddyAllocator.h"
 
+#include "networking/Sockets.h"
+
+#include <string>
+
 typedef int TestFunction_t( int argc, char * argv[] );
+
+struct functions_t {
+	const char * name;
+	TestFunction_t * functor;
+};
+
+functions_t g_functions[] = {
+	{ "TestSockets", TestSockets },
+
+	{ "TestJobSystem", TestJobSystem },
+
+	{ "TestBubbleSort", TestBubbleSort },
+	{ "TestHeapSort", TestHeapSort },
+	{ "TestInsertionSort", TestInsertionSort },
+	{ "TestMergeSort", TestMergeSort },
+	{ "TestQuickSort", TestQuickSort },
+	{ "TestSelectionSort", TestSelectionSort },
+	{ "TestShellSort", TestShellSort },
+	{ "TestRadixSort", TestRadixSort },
+
+	{ "TestSimpleTracker", TestSimpleTracker },
+	{ "TestMemoryPool", TestMemoryPool },
+	{ "TestStackAllocator", TestStackAllocator },
+	{ "TestBuddyAllocator", TestBuddyAllocator },
+};
 
 /*
 ====================================================
@@ -25,21 +54,34 @@ main
 ====================================================
 */
 int main( int argc, char * argv[] ) {
-	TestJobSystem( argc, argv );
+	if ( argc > 1 ) {
+		int numFunctions = sizeof( g_functions ) / sizeof( functions_t );
 
-	TestBubbleSort( argc, argv );
-	TestHeapSort( argc, argv );
-	TestInsertionSort( argc, argv );
-	TestMergeSort( argc, argv );
-	TestQuickSort( argc, argv );
-	TestSelectionSort( argc, argv );
-	TestShellSort( argc, argv );
-	TestRadixSort( argc, argv );
+		for ( int i = 0; i < numFunctions; i++ ) {
+			if ( 0 == strcmp( argv[ 1 ], g_functions[ i ].name ) ) {
+				g_functions[ i ].functor( argc, argv );
+				break;
+			}
+		}
+	} else {
+		TestSockets( argc, argv );
 
-	TestSimpleTracker( argc, argv );
-	TestMemoryPool( argc, argv );
-	TestStackAllocator( argc, argv );
-	TestBuddyAllocator( argc, argv );
+		TestJobSystem( argc, argv );
+
+		TestBubbleSort( argc, argv );
+		TestHeapSort( argc, argv );
+		TestInsertionSort( argc, argv );
+		TestMergeSort( argc, argv );
+		TestQuickSort( argc, argv );
+		TestSelectionSort( argc, argv );
+		TestShellSort( argc, argv );
+		TestRadixSort( argc, argv );
+
+		TestSimpleTracker( argc, argv );
+		TestMemoryPool( argc, argv );
+		TestStackAllocator( argc, argv );
+		TestBuddyAllocator( argc, argv );
+	}
 
 	return 0;
 }
