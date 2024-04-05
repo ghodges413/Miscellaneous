@@ -136,7 +136,7 @@ int Client( int argc, char * argv[] ) {
 }
 
 
-
+#if 0   // Enable to use POSIX
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -393,3 +393,4 @@ int SeverPosix( int argc, char * argv[] ) {
         HandleTCPClient( clntSock );
     }
 }
+#endif

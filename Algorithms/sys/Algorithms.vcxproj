@@ -28,13 +28,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -121,6 +121,7 @@
     <ClCompile Include="..\code\allocators\MemoryPool.cpp" />
     <ClCompile Include="..\code\allocators\SimpleTracker.cpp" />
     <ClCompile Include="..\code\allocators\StackAllocator.cpp" />
+    <ClCompile Include="..\code\interviews\ProducerConsumer.cpp" />
     <ClCompile Include="..\code\main.cpp" />
     <ClCompile Include="..\code\networking\Client.cpp" />
     <ClCompile Include="..\code\networking\Server.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="..\code\designpatterns\Observer.h" />
     <ClInclude Include="..\code\designpatterns\Prototype.h" />
     <ClInclude Include="..\code\designpatterns\Visitor.h" />
+    <ClInclude Include="..\code\interviews\ProducerConsumer.h" />
     <ClInclude Include="..\code\networking\Client.h" />
     <ClInclude Include="..\code\networking\Server.h" />
     <ClInclude Include="..\code\networking\Sockets.h" />

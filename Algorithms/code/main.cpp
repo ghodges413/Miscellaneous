@@ -19,6 +19,8 @@
 
 #include "networking/Sockets.h"
 
+#include "interviews/ProducerConsumer.h"
+
 #include <string>
 
 typedef int TestFunction_t( int argc, char * argv[] );
@@ -46,6 +48,8 @@ functions_t g_functions[] = {
 	{ "TestMemoryPool", TestMemoryPool },
 	{ "TestStackAllocator", TestStackAllocator },
 	{ "TestBuddyAllocator", TestBuddyAllocator },
+
+	{ "TestProducerConsumer", TestProducerConsumer },
 };
 
 /*
@@ -64,6 +68,8 @@ int main( int argc, char * argv[] ) {
 			}
 		}
 	} else {
+		TestProducerConsumer( argc, argv );
+
 		TestSockets( argc, argv );
 
 		TestJobSystem( argc, argv );
