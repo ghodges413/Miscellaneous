@@ -98,6 +98,7 @@ public:
         m_endIdx = 0;
     }
 
+#if 0
     void ProduceValue() {
         for ( int i = 0; i < m_maxCount; i++ ) {
             const int nextIdx = ( m_endIdx + 1 ) % BUFFER_SIZE;
@@ -124,7 +125,37 @@ public:
         m_startIdx = ( m_startIdx + 1 ) % BUFFER_SIZE;
         return val;
     }
+#else
+    void ProduceValue() {
+        for ( int i = 0; i < m_maxCount; i++ ) {
+            std::unique_lock< std::mutex > ulock( m_mutexProducer );
 
+            const int nextIdx = ( m_endIdx + 1 ) % BUFFER_SIZE;
+            if ( nextIdx == m_startIdx ) {
+                m_cvProducer.wait( ulock ); // sleep until notified to wake up
+            }
+
+            int idx = m_endIdx;
+            m_buffer[ idx ] = m_value;
+            m_value += m_delta;
+            m_endIdx = nextIdx;
+            m_cvConsumer.notify_one();      // wake up the consumer
+        }
+    }
+
+    int ConsumeValue() {
+        std::unique_lock< std::mutex > ulock( m_mutexConsumer );
+
+        if ( m_endIdx == m_startIdx ) {
+            m_cvConsumer.wait( ulock ); // sleep until notified to wake up
+        }
+
+        int val = m_buffer[ m_startIdx ];
+        m_startIdx = ( m_startIdx + 1 ) % BUFFER_SIZE;
+        m_cvProducer.notify_one();      // wake up the producer
+        return val;
+    }
+#endif
 
 private:
     std::array< int, BUFFER_SIZE > m_buffer;
@@ -135,11 +166,18 @@ private:
 
     int m_startIdx;
     int m_endIdx;
+
+    std::mutex m_mutexProducer;
+    std::condition_variable m_cvProducer;
+
+    std::mutex m_mutexConsumer;
+    std::condition_variable m_cvConsumer;
 };
 
+#define MAX_COUNT 10000
 
-ProducerConsumer odds( 1, 2, 1000 );
-ProducerConsumer evens( 0, 2, 1000 );
+ProducerConsumer odds( 1, 2, MAX_COUNT );
+ProducerConsumer evens( 0, 2, MAX_COUNT );
 
 void ProduceOdds() {
     odds.ProduceValue();
@@ -152,7 +190,7 @@ void ProduceEvens() {
 std::vector< int > accumulator;
 
 void Accumulate() {
-    for ( int i = 0; i < 1000; i++ ) {
+    for ( int i = 0; i < MAX_COUNT; i++ ) {
         int a = odds.ConsumeValue();
         int b = evens.ConsumeValue();
 
