@@ -121,8 +121,12 @@
     <ClCompile Include="..\code\allocators\MemoryPool.cpp" />
     <ClCompile Include="..\code\allocators\SimpleTracker.cpp" />
     <ClCompile Include="..\code\allocators\StackAllocator.cpp" />
-    <ClCompile Include="..\code\interviews\ProducerConsumer.cpp" />
     <ClCompile Include="..\code\main.cpp" />
+    <ClCompile Include="..\code\miscellaneous\Atoi.cpp" />
+    <ClCompile Include="..\code\miscellaneous\Calculator.cpp" />
+    <ClCompile Include="..\code\miscellaneous\Elevator.cpp" />
+    <ClCompile Include="..\code\miscellaneous\Endianess.cpp" />
+    <ClCompile Include="..\code\miscellaneous\ProducerConsumer.cpp" />
     <ClCompile Include="..\code\networking\Client.cpp" />
     <ClCompile Include="..\code\networking\Server.cpp" />
     <ClCompile Include="..\code\networking\Sockets.cpp" />
@@ -162,7 +166,11 @@
     <ClInclude Include="..\code\designpatterns\Observer.h" />
     <ClInclude Include="..\code\designpatterns\Prototype.h" />
     <ClInclude Include="..\code\designpatterns\Visitor.h" />
-    <ClInclude Include="..\code\interviews\ProducerConsumer.h" />
+    <ClInclude Include="..\code\miscellaneous\Atoi.h" />
+    <ClInclude Include="..\code\miscellaneous\Calculator.h" />
+    <ClInclude Include="..\code\miscellaneous\Elevator.h" />
+    <ClInclude Include="..\code\miscellaneous\Endianess.h" />
+    <ClInclude Include="..\code\miscellaneous\ProducerConsumer.h" />
     <ClInclude Include="..\code\networking\Client.h" />
     <ClInclude Include="..\code\networking\Server.h" />
     <ClInclude Include="..\code\networking\Sockets.h" />

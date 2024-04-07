@@ -19,7 +19,12 @@
 
 #include "networking/Sockets.h"
 
-#include "interviews/ProducerConsumer.h"
+#include "miscellaneous/Atoi.h"
+#include "miscellaneous/Calculator.h"
+#include "miscellaneous/Elevator.h"
+#include "miscellaneous/Endianess.h"
+#include "miscellaneous/ProducerConsumer.h"
+
 
 #include <string>
 
@@ -50,6 +55,7 @@ functions_t g_functions[] = {
 	{ "TestBuddyAllocator", TestBuddyAllocator },
 
 	{ "TestProducerConsumer", TestProducerConsumer },
+	{ "TestCalculator", TestCalculator },
 };
 
 /*
@@ -68,6 +74,8 @@ int main( int argc, char * argv[] ) {
 			}
 		}
 	} else {
+		TestElevator( argc, argv );
+		TestCalculator( argc, argv );
 		TestProducerConsumer( argc, argv );
 
 		TestSockets( argc, argv );
