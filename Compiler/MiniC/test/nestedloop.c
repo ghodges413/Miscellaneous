@@ -4,11 +4,18 @@
 //    return 5;
 //}
 
+//float pi() {
+//    return 3.14;
+//}
+
 int main()
 {
     int i;
     int j;
     int k;
+
+    float f;
+    f = 3.14;
 
     i = j = k = i + j;
 

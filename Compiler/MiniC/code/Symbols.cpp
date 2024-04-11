@@ -7,7 +7,7 @@ Symbols.cpp
 */
 #include "Symbols.h"
 
-SymbolTable2_t g_symbolTable;
+SymbolTable_t g_symbolTable;
 
 /*
 ====================================================
@@ -32,25 +32,50 @@ Symbol_t * FindSymbol( const char * symbolName ) {
 
 /*
 ====================================================
-FindConstant
+FindConstantInt
 ====================================================
 */
-Symbol_t * FindConstant( int value ) {
+Symbol_t * FindConstantInt( int value ) {
 	for ( int i = 0; i < g_symbolTable.symbols.size(); i++ ) {
 		Symbol_t * sym = g_symbolTable.symbols[ i ];
-		if ( ST_CONSTANT != sym->type ) {
+		if ( ST_CONSTANT_INT != sym->type ) {
 			continue;
 		}
 
-		if ( sym->constantValue == value ) {
+		if ( sym->constantValueInt == value ) {
 			return sym;
 		}
 	}
 
 	// if we get here, then the constant doesn't exist in the symbol table yet, so add i
 	Symbol_t * sym = new Symbol_t;
-	sym->type = ST_CONSTANT;
-	sym->constantValue = value;
+	sym->type = ST_CONSTANT_INT;
+	sym->constantValueInt = value;
+	g_symbolTable.symbols.push_back( sym );
+	return sym;
+}
+
+/*
+====================================================
+FindConstantFloat
+====================================================
+*/
+Symbol_t * FindConstantFloat( float value ) {
+	for ( int i = 0; i < g_symbolTable.symbols.size(); i++ ) {
+		Symbol_t * sym = g_symbolTable.symbols[ i ];
+		if ( ST_CONSTANT_FLOAT != sym->type ) {
+			continue;
+		}
+
+		if ( sym->constantValueFloat == value ) {
+			return sym;
+		}
+	}
+
+	// if we get here, then the constant doesn't exist in the symbol table yet, so add i
+	Symbol_t * sym = new Symbol_t;
+	sym->type = ST_CONSTANT_FLOAT;
+	sym->constantValueFloat = value;
 	g_symbolTable.symbols.push_back( sym );
 	return sym;
 }
@@ -75,11 +100,21 @@ bool AddFunctionToSymbolTable( const char * name ) {
 
 /*
 ====================================================
-AddConsantToSymbolTable
+AddConsantToSymbolTableInt
 ====================================================
 */
-bool AddConsantToSymbolTable( const int value ) {
-	FindConstant( value );
+bool AddConsantToSymbolTableInt( const int value ) {
+	FindConstantInt( value );
+	return true;
+}
+
+/*
+====================================================
+AddConsantToSymbolTableFloat
+====================================================
+*/
+bool AddConsantToSymbolTableFloat( const float value ) {
+	FindConstantFloat( value );
 	return true;
 }
 

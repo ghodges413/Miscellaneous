@@ -15,10 +15,16 @@ IsType
 ====================================================
 */
 bool IsType( Token_t tok ) {
-	if ( tok.type == TT_KEYWORD_INT ) {
+	if ( TT_KEYWORD_INT == tok.type ) {
+		return true;
+	}
+	if ( TT_KEYWORD_FLOAT == tok.type ) {
 		return true;
 	}
 	return false;
+}
+bool IsType( int idx ) {
+	return IsType( g_tokens[ idx ] );
 }
 
 bool IsType( std::vector< Token_t > & tokens, int & idx ) {

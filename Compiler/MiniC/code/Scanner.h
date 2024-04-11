@@ -56,7 +56,7 @@ enum TokenType_t {
 	TT_PARENTHCLOSE,		// )
 	TT_BRA,					// <
 	TT_KET,					// >
-	TT_ASSIGNEMNT,			// =
+	TT_ASSIGNMENT,			// =
 	TT_COMPARISON,			// ==
 	TT_LESSEQUAL,			// <=
 	TT_GREATEQUAL,			// >=

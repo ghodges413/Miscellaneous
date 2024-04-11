@@ -367,7 +367,7 @@ bool ScanLine( const char * buff, const int line ) {
 					AppendToken( TT_COMPARISON, NULL, 0, 0, col, line );
 					col++;
 				} else {
-					AppendToken( TT_ASSIGNEMNT, NULL, 0, 0, col, line );
+					AppendToken( TT_ASSIGNMENT, NULL, 0, 0, col, line );
 				}
 			} break;
 			case '&': {

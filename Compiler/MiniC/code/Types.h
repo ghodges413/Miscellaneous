@@ -11,6 +11,27 @@ Types.h
 #include "Scanner.h"
 
 
+
+enum VariableType_t {
+	VT_INT,
+	VT_FLOAT,
+	VT_BOOL,
+	VT_STRUCT,
+	VT_ENUM,
+	VT_PTR,
+	//VT_CONST,
+	//VT_ARRAY,
+};
+
+struct VariableTypeChain_t {
+  	std::string name;	// name of struct or enum
+//  	int scope;
+
+	VariableType_t type;
+
+	VariableTypeChain_t * next;	// This is for composite variable types... structs, integer pointers, etc
+};
+
 enum BuiltInType_t {
 	BIT_CHAR,
 	BIT_INT,
@@ -45,6 +66,7 @@ extern TypeTable_t g_typeTable;
 ====================================================
 ====================================================
 */
+bool IsType( int idx );
 bool IsType( Token_t tok );
 bool IsType( std::vector< Token_t > & tokens, int & idx );
 void AddType( const std::vector< Token_t > & tokens );

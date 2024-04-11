@@ -139,8 +139,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\code\AST.cpp" />
     <ClCompile Include="..\..\code\Error.cpp" />
     <ClCompile Include="..\..\code\Fileio.cpp" />
+    <ClCompile Include="..\..\code\LLVM.cpp" />
     <ClCompile Include="..\..\code\main.cpp" />
     <ClCompile Include="..\..\code\Parser.cpp" />
     <ClCompile Include="..\..\code\Scanner.cpp" />
@@ -149,8 +151,10 @@
     <ClCompile Include="..\..\code\Types.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\code\AST.h" />
     <ClInclude Include="..\..\code\Error.h" />
     <ClInclude Include="..\..\code\Fileio.h" />
+    <ClInclude Include="..\..\code\LLVM.h" />
     <ClInclude Include="..\..\code\Parser.h" />
     <ClInclude Include="..\..\code\Scanner.h" />
     <ClInclude Include="..\..\code\Symbols.h" />
