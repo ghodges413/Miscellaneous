@@ -1,0 +1,1536 @@
+%
+%	Pre-amble
+%
+
+\documentclass{article}
+%\documentclass[11pt,a4paper]{report}
+%\documentclass{book}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float} %used for figures
+\usepackage{hyperref}
+\usepackage{mathrsfs}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+
+%Custom commands
+\newcommand\norm[1]{\left\lVert#1\right\rVert}
+
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+% Custom Margins
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\lstdefinestyle{CStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\footnotesize,
+%    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                  %controls automatic wrap around
+   frame=single,
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=none,%left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C++
+}
+
+\usepackage{fontspec}
+\setmainfont[Ligatures=TeX]{Gadugi}
+\setsansfont[Ligatures=TeX]{Arial}
+
+
+%
+%	Begin the Document
+%
+
+\begin{document}
+
+
+%\begin{document}
+\title{Tensors}
+\author{Gregory Hodges\\Version 0.01}
+\date{No Copyright}
+\maketitle
+%\end{document}
+
+%\begin{abstract}
+%The abstract text goes here.
+%\end{abstract}
+
+
+%
+%	Table of Contents
+%
+
+\tableofcontents
+
+%
+%	Chapter
+%
+\newpage
+\section{Overview}
+
+These are my notes on Tensor Calculus.  Based primarily on the Schaum's Outlines.
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Notation}
+
+\noindent
+Einstein was lazy.  He didn't like writing the summation sign, $\sum_{i}$, repeatedly.  He did notice that whenever an index was repeated, that it was summed.  And therefore the summation could be inferred.
+
+\begin{align*}
+a_i x_i = a_1 x_1 + a_2 x_2 + ... + a_n x_n = \sum_{i = 1}^n a_i x_i
+\end{align*}
+
+\noindent
+The index that is used for summation is called the dummy index.  Any non-summation index is known as a free index.  In the following equation, $i$ is the free index and $j$ is the dummy index:
+
+\begin{equation}
+a_{ij} x_j
+\end{equation}
+
+\noindent
+Rules:
+
+\begin{enumerate}
+	\item Free indices have the same range as dummy indices, unless specified.
+	\item No index may occur more than twice in any given expression.  
+\end{enumerate}
+
+\noindent
+Non-identities:
+
+\begin{align*}
+a_{ij}(x_i + y_j) \neq a_{ij} x_i + a_{ij} y_j\\
+a_{ij} x_i y_j \neq a_{ij} y_i x_j\\
+(a_{ij} + a_{ji}) x_i y_j \neq 2 a_{ij} x_i y_j
+\end{align*}
+
+\noindent
+Valid Identities:
+
+\begin{align}
+a_{ij}(x_i + y_i) = a_{ij} x_i + a_{ij} y_j\\
+a_{ij} x_i y_j = a_{ij} y_j x_i\\
+a_{ij} x_i x_j = a_{ji} x_i x_j\\
+( a_{ij} + a_{ji} ) x_i x_j = 2 a_{ij} x_i x_j\\
+( a_{ij} - a_{ji} ) x_i x_j = 0
+\end{align}
+
+%
+%	Chapter
+%
+\newpage
+\section{Linear Algebra}
+
+\noindent
+The first subscript in a tensor, $a_{ij}$, is the row ($i$), and the second ($j$) is the column.  Sometimes braces $[a_{ij}]_{mn}$ are used to define the number of rows, $m$, and the number of columns, $n$.  In the case of mixed indices $a^i_j$, the superscript is the row and the subscript is the column.
+
+\subsection{Matrices}
+
+\noindent
+Matrix Multiplication:
+
+\begin{align*}
+	A = [ a_{ij} ]_{mn}\\
+	B = [ b_{ij} ]_{nk}\\
+	AB = [ a_{ir} b_{rj} ]_{mk}
+\end{align*}
+
+\noindent
+Orhogonal Matrix - $A^T = A^{-1}$
+
+\noindent
+Unitary Matrix - $U^* U = I$
+
+\noindent
+Hermitian Matrix - $U^\dag U = I$
+
+\subsection{Vectors}
+
+\noindent
+Permutation Symbol, $e_{ijk..w}$, is zero if the any subscripts are identical. And equals $(-1)^p$ otherwise, where $p$ is the number subscript transpositions required to bring them to natural order.
+
+\noindent
+Scalar Product:
+
+\begin{align*}
+	\mathbf{ u } = x_i\\
+	\mathbf{ v } = y_i\\
+	\mathbf{ u } \cdot \mathbf{ v } = x_i y_i
+\end{align*}
+
+\noindent
+Norm (length) of a vector: $\sqrt{ \mathbf{ u }^2 } = \sqrt{ x_i y_i }$
+
+\noindent
+Cross Product: $\mathbf{ u } \times \mathbf{ v } = ( e_{ijk} x_j y_k )$
+
+\subsection{Linear Systems}
+
+A system of equations written in matrix form:
+
+\begin{align}
+	A \mathbf{ x } = \mathbf{ b }
+\end{align}
+
+Can be written in tensor form:
+
+\begin{align}
+	a_{ij} x_j = b_i, (1 \leq i \leq m)
+\end{align}
+
+\noindent
+Quadratic form: $Q = a_{ij} x_i x_j = \mathbf{ x^T } A \mathbf{ x }$
+
+\subsection{Linear Transformation}
+
+\noindent
+Linear Transformation: $\mathbf{ \overline{ x } } = A \mathbf{ x }$
+
+\noindent
+Alias: When a linear transformation represents a change in coordinates
+
+\noindent
+Alibi: When a linear transformation represents a change in the object
+
+Distance in the barred coordinate system:
+
+\begin{align}
+	d( \mathbf{ \overline{ x } }, \mathbf{ \overline{ y } } ) = \sqrt{ ( \mathbf{ \overline{ x } } - \mathbf{ \overline{ y } } )^T G( \mathbf{ \overline{ x } } - \mathbf{ \overline{ y } } ) } = \sqrt{ g_{ij} \Delta \overline{ x }_i \Delta \overline{ x }_j }
+\end{align}
+
+where $g_{ij} = G = (AA^T)^{-1}$ and $\mathbf{ \overline{ x } } - \mathbf{ \overline{ y } } = \Delta \overline{ x }_i$.  If $A$ is orthogonal (a rotation matrix), the $g_{ij} = \delta_{ij}$ and the distance formula reduces to the ordinary form:
+
+\begin{align*}
+	d( \mathbf{ \overline{ x } }, \mathbf{ \overline{ y } } ) = \sqrt{ \Delta \overline{ x }_i \Delta \overline{ x }_j }
+\end{align*}
+
+\subsection{General Coordinate Transformations}
+
+A general mapping $T$ in $\mathbf{ R }^n$ may be written as:
+
+\begin{align*}
+	\mathbf{ \overline{ x } } = T( \mathbf{ x } )\\
+	or\\
+	\overline{ x }_i = T_i( x_1, x_2, ..., x_n )
+\end{align*}
+
+$T$ is a bijection or one-one mapping if it maps each pair of distinct points, $x \neq y$, to two distinct points in the mapping, $T(x) \neq T(y)$.  When T is bijective, the image $\mathbf{ \overline{ x } }$ is a set of admissible coordinates of $\mathbf{ x }$.
+
+If $T$ is linear, the $\overline{ x }_i$ system is called affine.  If $T$ is a rigid motion, then $\overline{ x }_i$ is called rectangular or cartesian.  Non-affine coordinate systems are called curvilinear coordinates; these include polar, cylindrical and spherical coordinates.
+
+\subsection{Chain Rule}
+
+Writing the chain rule, using the summation convention: If $w = f( x_1, x_2, ..., x_n )$ and $x_i = x_i( u_1, u_2,..., u_m )$
+
+\begin{equation}
+	\frac{ \partial w }{ \partial u_j } = \frac{ \partial f }{ \partial x_i } \frac{ \partial x_i }{ \partial u_j }
+\end{equation}
+
+
+%
+%	Chapter
+%
+\newpage
+\section{General Tensors}
+
+All future notation for coordinates will be changed to that usual of tensor calculus
+
+\subsection{Coordinate Transformations}
+
+\noindent
+Superscripts for Vector Components
+In $\mathbf{ R }^n$, coordinates of a point/vector, will be written as $(x^1, x^2,..., x^n)$.  Powers and supserscripts will be separated by paranthesis, $(x^3)^2$ is the third exponent raised to the power 2.
+
+\noindent
+Rectangular Coordinates
+Coordinates in $\mathbf{ R }^n$ are called rectangular/cartesian if the distance between two points P, Q is:
+
+\begin{align*}
+	PQ = \sqrt{ \delta_{ij} \Delta \overline{ x }_i \Delta \overline{ x }_j }
+\end{align*}
+
+\subsubsection{Curvilinear Coordinates}
+Given a coordinate transformation in $\mathbf{ R }^n$:
+
+\begin{equation}
+	\mathscr{ T } : \overline{ x }^i = \overline{ x }^i ( x^1, x^2, ..., x^n )
+\end{equation}
+
+\noindent
+This is known as curvilinear if it is differntiable everywhere and it is not an affine transformation.  Let's look at some examples:
+
+
+Polar Coordinates: Let $( \overline{ x }^1, \overline{ x }^2 ) = ( x, y )$ and $( x^1, x^2 ) = ( r, \theta )$, $r > 0$
+
+\begin{equation}
+	\mathscr{ T } :
+	\begin{matrix}
+	\overline{ x }^1 = x^1 cos( x^2 )\\
+	\overline{ x }^2 = x^1 sin( x^2 )
+	\end{matrix}\\
+	\mathscr{ T }^{-1} :
+	\begin{matrix}
+	x^1 = \sqrt{ ( \overline{ x }^1 )^2 + ( \overline{ x }^2 )^2 }\\
+	x^2 = tan^{-1}( \overline{ x }^2 / \overline{ x }^1 )
+	\end{matrix}
+\end{equation}
+
+
+Cylindrical Coordinates: Let $( \overline{ x }^1, \overline{ x }^2, \overline{ x }^3 ) = ( x, y, z )$ and $( x^1, x^2, x^3 ) = ( r, \theta, z )$, $r > 0$
+
+\begin{equation}
+	\mathscr{ T } :
+	\begin{matrix}
+	\overline{ x }^1 = x^1 cos( x^2 )\\
+	\overline{ x }^2 = x^1 sin( x^2 )\\
+	\overline{ x }^3 = x^3
+	\end{matrix}\\
+	\mathscr{ T }^{-1} :
+	\begin{matrix}
+	x^1 = \sqrt{ ( \overline{ x }^1 )^2 + ( \overline{ x }^2 )^2 }\\
+	x^2 = tan^{-1}( \overline{ x }^2 / \overline{ x }^1 )\\
+	x^3 = \overline{ x }^3
+	\end{matrix}
+\end{equation}
+
+
+Spherical Coordinates: Let $( \overline{ x }^1, \overline{ x }^2, \overline{ x }^3 ) = ( x, y, z )$ and $( x^1, x^2, x^3 ) = ( \rho, \phi, \theta )$, $r > 0$
+
+\begin{equation}
+	\mathscr{ T } :
+	\begin{matrix}
+	\overline{ x }^1 = x^1 sin( x^2 ) cos( x^3 )\\
+	\overline{ x }^2 = x^1 sin( x^2 ) sin( x^3 )\\
+	\overline{ x }^3 = x^1 cos( x^2 )
+	\end{matrix}\\
+	\mathscr{ T }^{-1} :
+	\begin{matrix}
+	x^1 = \sqrt{ ( \overline{ x }^1 )^2 + ( \overline{ x }^2 + ( \overline{ x }^3 )^2 }\\
+	x^2 = cos^{-1}( \overline{ x }^3 / \sqrt{ ( \overline{ x }^1 )^2 + ( \overline{ x }^2 )^2 + ( \overline{ x }^3 )^2 } )\\
+	x^3 = \tan^{-1}( \overline{ x }^2 / \overline{ x }^1 )
+	\end{matrix}
+\end{equation}
+
+\subsubsection{The Jacobian}
+
+The Jacobian matrix can be used to define the transformation from one coordinate system to another.  So, in general, if we want to go from an $x$ coordinate system to an $\overline{ x }$ coordinate system, we use:
+
+\begin{equation}
+	\mathbf{ J } =
+	\begin{bmatrix}
+	\frac{ \partial \overline{ x }^1 }{ \partial x^1 } & \frac{ \partial \overline{ x }^1 }{ \partial x^2 } & ... & \frac{ \partial \overline{ x }^1 }{ \partial x^n }  \\
+	\frac{ \partial \overline{ x }^2 }{ \partial x^1 } & \frac{ \partial \overline{ x }^2 }{ \partial x^2 } & ... & \frac{ \partial \overline{ x }^2 }{ \partial x^n }  \\
+	...\\
+	\frac{ \partial \overline{ x }^n }{ \partial x^1 } & \frac{ \partial \overline{ x }^n }{ \partial x^2 } & ... & \frac{ \partial \overline{ x }^n }{ \partial x^n }  \\
+	\end{bmatrix}
+\end{equation}
+
+If the determinant of the Jacobian is non-zero everywhere, then the transformation is locally bijective.
+
+
+\subsection{First-Order Tensors}
+
+Given a vector field $\mathbf{ V } = ( V^i )$, on a subset of $\mathbf{ R }^n$, let the $n$ components of $V^1, V^2, ..., V^n$ of $\mathbf{ V }$ be expressible as $n$ real-valued faunctions:
+
+\begin{equation*}
+	T^1, T^2, ..., T^n \text{ in the $(x^i)$-system }
+\end{equation*}
+
+and
+
+\begin{equation*}
+	\overline{ T }^1, \overline{ T }^2, ..., \overline{ T }^n \text{ in the $(\overline{ x }^i)$-system }
+\end{equation*}
+
+The vector field $V$ is a contravariant tensor of order one if its components transform related to:
+
+\begin{align}
+	\mathbf{ contravariant-vector: }\\
+	\overline{ T }^i = T^r \frac{ \partial \overline{ x }^i }{ \partial x^r }
+\end{align}
+
+The vector field $V$ is a covariant tensor of order one if its components transform related to:
+
+\begin{align}
+	\mathbf{ covariant-vector: }\\
+	\overline{ T }_i = T_r \frac{ \partial x^r }{ \partial \overline{ x }^i }
+\end{align}
+
+\noindent
+\textbf{Contravariant Example:}
+Tangent Vector of a line:
+
+\begin{equation*}
+	x^i = x^i(t)
+\end{equation*}
+
+The tangent vector field is defined as:
+
+\begin{equation*}
+	T^i = \frac{ dx^i }{ dt }
+\end{equation*}
+
+The same curve in the bar system is:
+
+\begin{equation*}
+	\overline{ x }^i = \overline{ x }^i( x^1(t), x^2(t), ..., x^n(t) )
+\end{equation*}
+
+The tangent vector in the bar coordinate system is:
+
+\begin{equation*}
+	\overline{ T }^i = \frac{ d \overline{ x }^i }{ dt }
+\end{equation*}
+
+We can observe via chain-rule:
+
+\begin{equation*}
+	\frac{ \overline{ x }^i }{ dt } = \frac{ \partial \overline{ x }^i }{ \partial x^r } \frac{ dx^r }{ dt } \text{ or } \overline{ T }^i = T^r \frac{ \partial \overline{ x }^i }{ \partial x^r }
+\end{equation*}
+
+
+\noindent
+\textbf{Covariant Example:}
+Gradient Vector of a scalar field:
+
+\begin{equation*}
+	\nabla F = \left( \frac{ \partial F }{ \partial x^1 }, \frac{ \partial F }{ \partial x^2 }, ..., \frac{ \partial F }{ \partial x^n } \right)
+\end{equation*}
+
+The barred system gradient vector is $\overline{ \nabla F } = ( \partial \overline{ F } / \partial \overline{ x }^i )$.  Again, via the chain rule:
+
+\begin{equation*}
+	\frac{ \partial \overline{ F } }{ \partial \overline{ x }^i } = \frac{ \partial F }{ \partial x^r } \frac{ \partial x^r }{ \partial \overline{ x }^i }
+\end{equation*}
+
+\noindent
+\textbf{Invariants:}
+Anything that is independent of the coordinate system used is considered an invariant.  An example of an invariant is the product of a covariant vector with a contravariant vector.
+
+
+
+\subsection{Higher-Order Tensors}
+
+\subsubsection{Second-Order Tensors:}
+Let $\mathbf{ V } = (V^{ij})$ denote a matrix field.  The field is a contravariant tensor of order two if it obeys the transformation law:
+
+\begin{align}
+	\mathbf{ contravariant-tensor: }\\
+	\overline{ T }^{ij} = T^{rs} \frac{ \partial \overline{ x }^i }{ \partial x^r } \frac{ \partial \overline{ x }^j }{ \partial x^s }
+\end{align}
+
+The field is a covariant tensor of order two if it obeys the transformation law:
+
+\begin{align}
+	\mathbf{ covariant-tensor: }\\
+	\overline{ T }_{ij} = T_{rs} \frac{ \partial x^r }{ \partial \overline{ x }^i } \frac{ \partial x^s }{ \partial \overline{ x }^j }
+\end{align}
+
+The field is a mixed tensor of order two if one component transforms covariantly and the other transforms contravariantly:
+
+\begin{align}
+	\mathbf{ covariant-tensor: }\\
+	\overline{ T }^i_j = T^r_s \frac{ \partial \overline{ x }^i }{ \partial x^r } \frac{ \partial x^s }{ \partial \overline{ x }^j }
+\end{align}
+
+\subsubsection{Arbitrary-Order Tensors:}
+The generalize vector field $\mathbf{ V }$ is a tensor of order $m = p + q$, contravariant of order $p$ and covariant of order $q$,
+if its components $(T^{i_1 i_2 ... i_p}_{j_1 j_2 ... j_q})$ in $(x^i)$ and $(\overline{T}^{i_1 i_2 ... i_p}_{j_1 j_2 ... j_q})$
+in $(\overline{ x }^i)$ obey $p$ contravariant transformations and $q$ covariant transformations.
+
+
+
+\subsection{The Stress Tensor}
+Interestingly, it was the concept of mechanical stress that lead to the development of tensors.  Given a unit cube, with three forces applied to three of its faces.
+Each force vector represents the stress per unit area.  The orthogonal components represent pressure and the tangent components represent shearing.
+
+\subsection{Cartesian Tensors}
+Linear transformations that are also orthogonal, $\mathbf{ J }^{-1} = \mathbf{ J }^T$.  Then the contravariant and covariant tesnors do not distinguish themselves.  Consequently, all cartesian tensors use subscripts:
+
+\begin{align*}
+	\text{ allowable coordinate changes: }\\
+	\overline{ x }_i = a_{ij} x_j\\
+	\text{ cartesian tensor laws: }\\
+	\overline{ T }_i = a_{ir} T_r
+\end{align*}
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Tensor Operations and Tests for Tensor Character}
+
+\subsection{Fundamental Operations}
+
+The following is a list of basic operations on tensors that result in new tensors.
+
+\subsubsection{Sums, Linear Combinations}
+
+If $T_1, T_2, ..., T_{\mu}$ are tensors of the same type and order.  And if $\lambda_1, \lambda_2, ..., \lambda_{\mu}$ are invariant scalars, then 
+
+\begin{equation*}
+	\lambda_1 T_1 + \lambda_2 T_2 + ... + \lambda_{\mu} T_{\mu}
+\end{equation*}
+
+\noindent
+is a tensor of the same type and order.
+
+\subsubsection{Outer Product}
+
+The outer product of the tensor $S$ and $T$ is the tensor:
+
+\begin{equation*}
+	ST = ( S^{i_1...i_p}_{j_1...j_q} \cdot T^{k_1...k_r}_{l_1...l_s} )
+\end{equation*}
+
+which is of order $m = p + q + r + s$.  Contravariant order of $p + r$, and covariant order of $q + s$.
+
+\subsubsection{Inner Product}
+
+The inner product is by setting the upper index of one tensor to the same thing as a lower index of the other tensor.  The resulting sum produces the inner product.
+
+\begin{equation*}
+	ST^i_j = S^{i r} T_{r j}
+\end{equation*}
+
+\noindent
+The order of the resulting tensor is the order of the previous tensors minus 2.
+
+Another example is that of an inner product of two tenser $T_{ij}$ and $T^{ij}$:
+
+\begin{equation*}
+	T^{i \mu} T_{\mu j} = \delta^i_j
+\end{equation*}
+
+\subsubsection{Contraction}
+
+A contraction reduces the order of a tensor, but only on a single tensor.  Set one index equal to another, and the resulting sum is the contraction.  As an example,
+given a tensor $S^{ijk}_{rst}$, the following is a contraction:
+
+\begin{equation*}
+	S' = S^{i \mu k}_{r \mu t}
+\end{equation*}
+
+\subsubsection{Combined Operations}
+
+Any of the above operations can be combined together.  An interesting noteworthy combination is that an inner product of two tensors is equivalent to a contraction of their outer product.
+
+\begin{equation*}
+	u^i v_i = \text{contraction}( uv^r_s ) = uv^{\mu}_{\mu}
+\end{equation*}
+
+
+\subsection{Tests for Tensor Character}
+
+It's found to be useful to use the Quotient Theorem for tensors as a test for tensor character.  The basic version of the quotient theorem is that for a vector $V$,
+if it can be shown that the innver product $TV$ is a tensor for all vectors $V$, then $T$ is a tensor.
+
+Tests for tensor character:
+
+\begin{enumerate}
+	\item If $T_i V^i = E$ is an invariant for all contravariant vectors $V^i$, then $T_i$ is a covariant vector (tensor of order 1).
+	\item If $T_{ij} V^i = U_j$ are components of a covariant vector for all contravariant vectors $V^i$, the $T_{ij}$ is a covariant tensor of order 2.
+	\item If $T_{ij} V^i U^j = E$ are components of a covariant vector for all contravariant vectors $V^i$ and $U^j$, then $T_{ij}$ is a covariant tensor of order 2.
+	\item If $T_{ij}$ is symmetric and $T_{ij} V^i V^j = E$ is invariant for all contravariant vectors $V^i$, then $T_{ij}$ is a covariant tensor of order 2.
+\end{enumerate}
+
+
+
+\subsection{Tensor Equations}
+
+If a tensor equation is true in one coordinate system, then it is true in all coordinate systems.
+
+\noindent \textbf{Example 1: }
+Suppose that in some coordinate system, $x^i$, the covarinat tensor $T_ij$ vanishes.  The components of $T$ in any other coordinate system, $\overline{ x }^i$, are given by:
+
+\begin{equation*}
+	\overline{ T }_{ij} = T_{rs} \frac{ \partial x^r }{ \partial \overline{ x }^i } \frac{ \partial x^s }{ \partial \overline{ x }^j } = 0 + 0 + ... + 0 = 0
+\end{equation*}
+
+\noindent \textbf{Theorem: }
+If $T_{ij}$ is a covariant tensor of order two whose determinant vanishes in on coordinate system, then its determinant vanishes in all coordinate systems
+
+\noindent \textbf{Corollary: }
+A covariant tensor of order two that is invertibel in one coordinate system is invertible in all coordinate systems
+
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{The Metric Tensor}
+
+The section is devoted to determining distances.  In non-Euclidean spaces, the pythagorean theorem does not hold.  Here we will introduce the metric tensor to describe arc length in any coordinate system.
+
+\subsection{Arc Length in Euclidean Space}
+
+The following is the equation for arc length:
+
+\begin{equation}
+	L = \int_a^b \sqrt{ g_{ij} \frac{ dx^i }{ dt } \frac{ dx^j }{ dt } } dt
+\end{equation}
+
+\noindent
+where $g_{ij} = g_{ij}( x^1, x^2, ..., x^n ) = g_{ji}$ are functions of the coordinates and $L$ gives the length of the arc from $[a,b]$ of the curve $x^i = x^i(t)$.
+
+The metric can be expressed in differential form, $ds^2 = g_{ij} dx^i dx^j$, for the following common coordinate systems:
+
+\begin{gather*}
+	\text{Rectilinear Coordinates: } (x^1, x^2, y^3) = (x, y, z)\\ ds^2 = (dx^1)^2 + (dx^2)^2 + (dx^3)^2 = \delta_{ij} dx^i dx^j\\
+	\text{Polar Coordinates: } (x^1, x^2) = (r, \theta)\\ ds^2 = (dx^1)^2 + (x^1)^2 (dx^2)^2\\
+	\text{Cylindrical Coordinates: } (x^1, x^2, x^3) = (r, \theta, z)\\ ds^2 = (dx^1)^2 + (x^1)^2 (dx^2)^2 + (dx^3)^2\\
+	\text{Spherical Coordinates: } (x^1, x^2, x^3) = (\rho, \phi, \theta)\\ ds^2 = (dx^1)^2 + (x^1)^2 (dx^2)^2 + (x^1 sin( x^2 ))(dx^3)^2\\
+\end{gather*}
+
+
+\subsection{Generalized Metrics}
+
+Properties of the metric tensor $mathbf{g}$:
+
+\begin{enumerate}
+	\item $\mathbf{g}$ is of differentiability class $C^2$ (all second-order partial derivatives of $g_{ij}$ exist and are continuous)
+	\item $\mathbf{g}$ is symmetric ($g_{ij} = g_{ji}$)
+	\item $\mathbf{g}$ is nonsingular (the determinant is not zero)
+	\item The differential form ($ds^2 = g_{ij} dx^i dx^j$), and hence the distance, is invariant with respect to a change of coordinates
+\end{enumerate}
+
+\noindent \textbf{Theorem: }
+The metric $\mathbf{g} = g_{ij}$ is a covariant tensor of the second order.
+
+\noindent \textbf{Theorem: }
+If the Jacobian matrix of the transformation from a given coordinate system $x^i$ to a rectangular system $\overline{x}^i$ is $J = \partial \overline{ x }^i / \partial x^j$,
+then the matrix $G = g_{ij}$ of the Euclidean metric tensor in the $x^i$ system is given by:
+
+\begin{equation}
+	G = J^T J
+\end{equation}
+
+
+\subsection{Raising and Lowering Indices}
+
+It is know that if $T^i$ is a contravariant vector, then the product $S_i = g_{ij} T^j$ will be a covariant vector.  And since $g_{ij}$ is the metric tensor, and therefore defines distance.
+Then $S_i$ and $T^i$ are the covariant and contravariant aspects of the same thing.  Therefore, we don't bother with the change of symbol and instead write:
+
+\begin{equation}
+	T_i = g_{ij} T^j
+\end{equation}
+
+\noindent
+and say that taking the inner product of the vector with the metric tensor has lowered the contravariant index to a covariant index.
+
+The matrix $g_{ij}$ is invertible.  And its inverse is written as $g^{ij}$. Or $(g^{ij}) = (g_{ij})^{-1}$.  And the inverse metric tensor can be used to raise a covariant index to a contravariant index:
+
+\begin{equation}
+	T^i = g^{ij} T_j
+\end{equation}
+
+\noindent
+This is also called the conjugate metric tensor.
+
+
+
+\subsection{Generalized Inner-Product Spaces}
+
+So far the inner product of a vector, as we know it, has been $V_i V^i$.  But what if we want to take an inner product between two covariant vectors $U_i$ and $V_i$ or two contravarinat vectors $U^i$ and $V^i$.
+We can use the metric tensor to define a generalized inner product.  For contravariant vectors:
+
+\begin{equation}
+	\mathbf{ U } \mathbf{ V } = g_{ij} U^i V^j = U_j V^j = U^i V_i
+\end{equation}
+
+and for two covariant vectors:
+
+\begin{equation}
+	\mathbf{ U } \mathbf{ V } = g^{ij} U_i V_j = U^j V_j = U_i V^i
+\end{equation}
+
+
+\subsection{Length and Angle}
+
+As usual the inner product can be used to define the length of a vector and the angle between two vectors:
+
+\begin{equation}
+	\text{Length: } \norm{ \mathbf{ V } } = \sqrt{\mathbf{V}^2} = \sqrt{V_i V^i} = \sqrt{ g_{ij} V^i V^j}
+\end{equation}
+
+\begin{equation}
+	\text{Angle: } cos( \theta ) = \frac{ \mathbf{ UV } }{ \norm{ \mathbf{ U } } \norm{ \mathbf{ V } } } = \frac{ g_{ij} U^i V^j }{ \sqrt{ g_{pq} U^p U^q} \sqrt{ g_{rs} V^r V^s} }
+\end{equation}
+
+
+
+
+
+
+
+
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Derivative of a Tensor}
+
+
+\subsection{Inadequacy of ordinary differentiation}
+
+Consider a contravariant tensor $\mathbf{ T } = T^i(\mathbf{ x }(t))$ defined on the curve $\mathbf{ x } = \mathbf{ x }(t)$.  Differentiating the transfromation law:
+
+
+\begin{equation*}
+	\overline{ T }^i = T^r \frac{ \partial \overline{ x }^i }{ \partial x^r }
+\end{equation*}
+
+\noindent with respect to t gives:
+
+\begin{equation*}
+	\frac{ d \overline{ T }^i }{ dt } = \frac{ dT^r }{ dt } \frac{ \partial \overline{ x }^i }{ x^r } + T^r \frac{ \partial^2 \overline{ x }^i }{ \partial x^s \partial x^r } \frac{ dx^s }{ dt }
+\end{equation*}
+
+\noindent which shows that the ordinatey derivative of $\mathbf{ T }$ laong the curve is a contravariant tensor when and only when the $\overline{ x }^i$ are linear functions of the $x^r$.
+
+\noindent \textbf{Theorem: }
+The derivative of a tensor is a tensor if and only if coordinate chagnes are restricted to linear transformations.
+
+
+
+
+
+\subsection{Christoffel Symbols of the First Kind}
+
+The Christoffel symbols of the first kind:
+
+\begin{equation}
+	\Gamma_{ijk} = \frac{ 1 }{ 2 } \left[ \frac{ \partial }{ \partial x^i }(g_{jk}) + \frac{ \partial }{ \partial x^j }(g_{ki}) - \frac{ \partial }{ \partial x^k }(g_{ij})\right]
+\end{equation}
+
+The shorthand way of writing this is to assume that the final subscript of $g$ is the partial derivate of $x$ with respect to that index:
+
+\begin{equation}
+	\Gamma_{ijk} = \frac{ 1 }{ 2 } \left( -g_{ijk} + g_{jki} + g_{kij} \right)
+\end{equation}
+
+\noindent \textbf{Example: }
+Let's look at the Christoffel symbols for spherical coordinates in Euclidean space:
+
+\begin{equation*}
+	G =
+	\begin{pmatrix}
+	1 & 0 & 0 \\
+	0 & (x^1)^2 & 0 \\
+	0 & 0 & (x^1)^2 sin^2 x^2 \\
+	\end{pmatrix} 
+\end{equation*}
+
+\noindent
+This gives us: $g_{221} = 2x^1$, $g_{331} = 2x^1 sin^2( x^2 )$, $g_{332} = 2(x^1)^2 sin( x^2 ) cos( x^2 )$, and all other $g_{ijk}$ are zero.  This means $\Gamma$ is zero for this metric.
+
+\noindent
+Basic properties of the Christoffel symbols:
+
+\begin{enumerate}
+	\item $\Gamma_{ijk} = \Gamma_{jik}$ (symmetric in the first two indices)
+	\item All $\Gamma_{ijk}$ vanish if all $g_{ij}$ are constant
+\end{enumerate}
+
+\noindent
+A useful formula results from simply permuting the subscripts and summing:
+
+\begin{equation}
+	\frac{ \partial g_{ik} }{ \partial x^j } = \Gamma_{ijk} + \Gamma_{jki}
+\end{equation}
+
+\noindent
+The converse of property 2 follows at once:
+
+\noindent \textbf{Lemma: }
+In any particular coordinate system, the Christoffel symbols uniformly vanish if and only if the metric tensor has constant components in that system.
+
+
+\noindent \textbf{Transformation Law: }
+The transformation law for the $\Gamma_{ijk}$ can be inferred from that for the $g_{ij}$.  By differentiation,
+
+\begin{equation*}
+	\overline{ g }_{ijk} = \frac{ \partial }{ \partial \overline{ x }^k } \left( g_{rs} \frac{ \partial x^r }{ \partial \overline{ x }^i } \frac{ \partial x^s }{ \partial \overline{ x }^j } \right) \\
+	= \frac{ \partial g_{rs} }{ \partial \overline{ x }^k } \frac{ \partial x^r }{ \partial \overline{ x }^i } \frac{ \partial x^s }{ \partial \overline{ x }^j } \\
+	+ g_{rs} \frac{ \partial^2 x^r }{ \partial \overline{ x }^k \partial \overline{ x }^i } \frac{ \partial x^s }{ \partial \overline{ x }^j } \\
+	+ g_{rs} \frac{ \partial x^r }{ \partial \overline{ x }^i } \frac{ \partial^2 x^s }{ \partial \overline{ x }^k \partial \overline{ x }^j } \\
+\end{equation*}
+
+\noindent
+Use the chain rule on $\partial g_{rs} / \partial \overline{ x }^k$:
+
+\begin{equation*}
+	\frac{ \partial g_{rs} }{ \partial \overline{ x }^k } = \frac{ \partial g_{rs} }{ \partial x^t } \frac{ \partial x^t }{ \partial \overline{ x }^k } = g_{rst} \frac{ \partial x^t }{ \partial \overline{ x }^k }
+\end{equation*}
+
+\noindent
+Then rewrite the expression with subscripts permuted cyclically and cancel terms gives:
+
+\begin{equation}
+	\overline{ \Gamma }_{ijk} = \Gamma_{rst} \frac{ \partial x^r }{ \partial \overline{ x }^i } \frac{ \partial x^s }{ \partial \overline{ x }^j } \frac{ \partial x^t }{ \partial \overline{ x }^k } \\
+	+ g_{rs} \frac{ \partial^2 x^r }{ \partial \overline{ x }^i \partial \overline{ x }^j } \frac{ \partial x^s }{ \partial \overline{ x }^k } \\
+\end{equation}
+
+This shows that the Christoffel Symbols are a third order covariant affine tensor, but it is not a general tensor.
+
+\subsection{Christoffel Symbols of the Second Kind}
+
+The $n^3$ functions:
+
+\begin{equation}
+	\Gamma^i_{jk} = g^{ir} \Gamma_{jkr}
+\end{equation}
+
+\noindent
+are the Christoffel symbols of the second kind.  It should benoted that this formula is simply the result of raising the thrid subscript of the Christoffel symbol of the first kind, 
+although here we are not dealing with tensors.
+
+\noindent
+Basic properties of the Christoffel symbols:
+
+\begin{enumerate}
+	\item $\Gamma^i_{jk} = \Gamma^i_{kj}$ (symmetry in the lower indices)
+	\item All $\Gamma^i_{jk}$ vanish if all $g_{ij}$ are constant
+\end{enumerate}
+
+\noindent \textbf{Transformation Law: }
+Starting with:
+
+\begin{equation*}
+	\overline{ \Gamma }^i_{jk} = \overline{ g }^{ir} \Gamma_{jkr} = \left( g^st \frac{ \partial \overline{ x }^i }{ \partial x^s } \frac{ \partial \overline{ x }^r }{ \partial x^t } \right) \overline{ \Gamma }_{jkr}
+\end{equation*}
+
+\noindent substituting for $\overline{ \Gamma }_{jkr}$ yields:
+
+\begin{equation}
+	\overline{ \Gamma }^i_{jk} = \Gamma^r_{st} \frac{ \partial \overline{ x }^i }{ \partial x^r } \frac{ \partial x^s }{ \partial \overline{ x }^j } \frac{ \partial x^t }{ \partial \overline{ x }^k } \\
+	+ \frac{ \partial^2 x^r }{ \partial \overline{ x }^j \partial \overline{ x }^k } \frac{ \partial \overline{ x }^i }{ \partial x^r }
+\end{equation}
+
+\noindent \textbf{An Important Formula: }
+
+\begin{equation}
+	\frac{ \partial^2 x^r }{ \partial \overline{ x }^i \partial \overline{ x }^j } = \overline{ \Gamma }^s_{ij} \frac{ \partial x^r }{ \partial \overline{ x }^s } - \Gamma^r_{st} \frac{ \partial x^s }{ \partial \overline{ x }^i } \frac{ \partial x^t }{ \partial \overline{ x }^j }
+\end{equation}
+
+
+
+
+\subsection{Covariant Differentiation}
+
+\subsubsection{Differentiation of a vector}
+
+Recall the transformation law: $\overline{ T }_i = T_r \frac{ \partial x^r }{ \partial \overline{ x }^i }$.  The differentiation of a covariant vector $T_i$ yields:
+
+\begin{equation}
+	\frac{ \overline{ T }_i }{ \partial \overline{ x }^k } = \frac{ \partial T_r }{ \partial \overline{ x }^k } \frac{ \partial x^r }{ \partial \overline{ x }^i } + T_r \frac{ \partial^2 x^r }{ \partial \overline{ x }^k \partial \overline{ x }^i }
+\end{equation}
+
+Using the chain rule on the first term and the formula from the previous section on the second term, gives:
+
+\begin{equation}
+	\frac{ \overline{ T }_i }{ \partial \overline{ x }^k } - \overline{ \Gamma }^t_{ik} \overline{ T }_t = \left( \frac{ \partial T_r }{ \partial x^s } - \Gamma^t_{rs} T_t \right) \frac{ \partial x^r }{ \partial \overline{ x }^i } \frac{ \partial x^s }{ \partial \overline{ x }^k }
+\end{equation}
+
+This is the defining law of a covraiant tensor of order two.  In other words, when the components of $\partial \mathbf{ T } / \partial x^k$ are corrected by subtracting certain linera combinations of the components of $\mathbf{ T }$ itself,
+the result is a tensor and not just an affine tensor.
+
+\noindent \textbf{Definition 1: }
+In any coordinate system $x^i$, the covariant derivative with respect to $x^k$ of a covariant vector $\mathbf{ T } = T_i$ is the tensor
+
+\begin{equation*}
+	\mathbf{ T }_{,k} = (T_{i,k}) \left( \frac{ \partial T_i }{ \partial x^k } - \Gamma^t_{ik} T_t \right)
+\end{equation*}
+
+\noindent \textbf{Remark 1: }
+The two covariant indices are noted $i$ and $,k$ to emphasize that the second index arose from an operation with respect to the kth coordinate.
+
+\noindent \textbf{Remark 2: }
+The covariant derivative and the partial derivative coincide when the $g_{ij}$ are constants (as in a rectangular coordinate system).
+
+\noindent \textbf{Definition 2: }
+In any coordinate system $x^i$, the covariant derivative with respect to $x^k$ of a contravariant vector $\mathbf{ T } = T^i$ is the tensor
+
+\begin{equation*}
+	\mathbf{ T }_{,k} = (T^i_{,k}) \left( \frac{ \partial T^i }{ \partial x^k } - \Gamma^i_{tk} T^t \right)
+\end{equation*}
+
+\subsubsection{Differentiation of any tensor}
+
+The covariant derivative of an arbitrary tensor is a tensor of which the covariant order exceeds that of the original tensor by exactly one.
+
+\subsection{Absolute Differentiation along a Curve}
+
+Because $T^i_{,j}$ is a tensor, the inner product of $T^i_{,j}$ with another tensor is also a tensor.  Suppose that the other tensor is $dx^i / dt$, the tangent vector of the curve $x^i( t )$.  
+Then the inner product $T^i_{,r} \frac{ dx^r }{ dt }$ is a tensor of the same type and order as the origianl tensor $T^i$.  This tensor is known as the absolute derivative of $T^i$ along the curve, with components written as:
+
+\begin{equation}
+	\frac{ \delta T^i }{ \delta t } = \left( \frac{ dT^i }{ dt } + \Gamma^i_{rs} T^r \frac{ dx^s }{ dt } \right)\\
+	\text{, where }\\
+	T^i = T^i( \mathbf{ x }(t) )
+\end{equation}
+
+It is clear that, again, in coodrinate system in which the $g_{ij}$ are constant, absolute differentiation reduces to ordinary differentiation.
+
+
+\subsubsection{Acceleration in General Coordinates}
+
+In rectangular coodrinates the acceleration of a particle is the second time derivative of the position function $x^i(t)$:
+
+\begin{equation*}
+	\mathbf{ a } = a^i = \frac{ d }{ dt } \frac{ dx^i }{ dt } = \frac{ d^2 x^i }{ dt^2 }\\
+	\text{, where the length of the vector is: }\\
+	a = \sqrt{ \delta_{ij} a^i a^j }
+\end{equation*}
+
+The generalization of a derivative along a curve is:
+
+\begin{equation*}
+	\frac{ \delta }{ \delta t } \left( \frac{ dx^i }{ dt } \right) = \frac{ d^2 x^i }{ dt^2 } + \Gamma^i_{rs} \frac{ dx^r }{ dt } \frac{ dx^s }{ dt }
+\end{equation*}
+
+Therefore the acceleration in general coordinates can be written:
+
+\begin{align}
+	\mathbf{ a } = a^i = \frac{ d^2 x^i }{ dt^2 } + \Gamma^i_{rs} \frac{ dx^r }{ dt } \frac{ dx^s }{ dt }\\
+	a = \sqrt{ g_{ij} a^i a^j }
+\end{align}
+
+
+\subsubsection{Curvature in General Coordinates}
+
+The curvature of a curve $x^i(s)$ in Euclidean space is defined as:
+
+\begin{equation*}
+	\kappa( s ) = \sqrt{ \delta_{ij} \frac{ d^2 x^i }{ dx^2 } \frac{ d^2 x^j }{ ds^2 } }
+\end{equation*}
+
+\noindent
+where $ds/dt = \sqrt{ \delta_{ij}(dx^i/dt)(dx^j/dt)}$ gives the arc-length parameter.  The obvious way to extend this concept as an invariant is again to use absolute differentiation.  Writing:
+
+\begin{equation}
+	b^i = \frac{ \delta }{ \delta s } \frac{ dx^i }{ ds } = \left( \frac{ d^2 x^i }{ ds^2 } + \Gamma^i_{pq} \frac{ dx^p }{ ds } \frac{ dx^q }{ ds } \right)\\
+	\text{, where the curvature is given by: }\\
+	\kappa(s) = \sqrt{ g_{ij} b^i b^j }
+\end{equation}
+
+
+\subsubsection{Geodesics}
+
+A geodesic is a curve for which $\kappa = 0$, that is, the "straight" lines are geodesics.  For positive definite metrics, this condition is equivalent to requireing that:
+
+\begin{equation}
+	b^i = \frac{ \delta }{ \delta s } \frac{ dx^i }{ ds } = \frac{ d^2 x^i }{ ds^2 } + \Gamma^i_{pq} \frac{ dx^p }{ ds } \frac{ dx^q }{ ds } = 0
+\end{equation}
+
+\noindent
+The solution of this system of second order differential equations will define the geodics $x^i = x^i(s)$.
+
+\subsection{Rules for Tensor Differentiation}
+
+\subsubsection{Rules for Covariant Differentiation}
+
+\begin{align*}
+	\text{sum: } (\mathbf{ T } + \mathbf{ S })_{,k} = \mathbf{ T }_{,k} + \mathbf{ S }_{,k}\\
+	\text{outer product: } [\mathbf{ T } \mathbf{ S }]_{,k} = [\mathbf{ T }_{,k} \mathbf{ S }] + [\mathbf{ T } \mathbf{ S }_{,k}]\\
+	\text{inner product: } (\mathbf{ T } \mathbf{ S })_{,k} = \mathbf{ T }_{,k} \mathbf{ S } + \mathbf{ T } \mathbf{ S }_{,k}\\
+\end{align*}
+
+\subsubsection{Rules for Absolute Differentiation}
+
+\begin{align*}
+	\text{sum: } \frac{ \delta }{ \delta t } (\mathbf{ T } + \mathbf{ S }) = \frac{ \delta \mathbf{ T } }{ \delta t } + \frac{ \delta \mathbf{ S } }{ \delta t }\\
+	\text{outer product: } \frac{ \delta }{ \delta t } [\mathbf{ T } \mathbf{ S }] = [\frac{ \delta \mathbf{ T } }{ \delta t } \mathbf{ S }] + [\mathbf{ T } \frac{ \delta \mathbf{ S } }{ \delta t }]\\
+	\text{inner product: } \frac{ \delta }{ \delta t } (\mathbf{ T } \mathbf{ S }) = \frac{ \delta \mathbf{ T } }{ \delta t } \mathbf{ S } + \mathbf{ T } \frac{ \delta \mathbf{ S } }{ \delta t }\\
+\end{align*}
+
+Also note that $\frac{ \delta }{ \delta t } \mathbf{ g } = 0$
+
+
+
+
+
+
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Riemannian Geometry of Curves}
+
+\subsection{Introduction}
+
+\noindent \textbf{Definition: }
+A Reimannian space is the space $\mathbf{ R }^n$ coordinatized by $x^i$, together with a fundamental form or Riemannian metric, $g_{ij} dx^i dx^j$, where $\mathbf{g} = (g_{ij})$ obeys the conditions from Section 6.2 Generalized Metrics.
+
+\subsection{Length and Angle under an Indefinite Metric}
+
+\noindent \textbf{Definition: }
+The norm of an arbitrary (contravariant or covariant) vector $mathbf{ V }$ is
+
+\begin{equation*}
+	\norm{ \mathbf{ V } } = \sqrt{ \epsilon \mathbf{ V }^2 } = \sqrt{ \epsilon V_i V^i }
+\end{equation*}
+
+\noindent where $\epsilon$ is the indicator function.
+
+If $\mathbf{ V }(t)$ is the tangent field ot the curve $x^i = x^i(t)$, then the length formula may be written:
+
+\begin{equation}
+	L = \int_a^b \sqrt{ \epsilon g_{ij} \frac{ dx^i }{ dt } \frac{ dx^j }{ dt } } dt = \int_a^b \norm{ \mathbf{ V }(t) } dt
+\end{equation}
+
+The angle between non-null contravariant vectors is still defined by:
+
+\begin{equation}
+	\cos{ \theta } = \frac{ \mathbf{ UV } }{ \norm{ \mathbf{ U } } \norm{ \mathbf{ V } } } = \frac{ g_{ij} U^i V^j }{ \sqrt{ \epsilon_1 g_{pq} U^p U^q } \sqrt{ \epsilon_2 g_{rs} V^r V^s } }
+\end{equation}
+
+Because of the indefiniteness of the metric, we must distinguish two possibilites:
+
+\noindent \textbf{Case 1: }
+$|UV| \leq \norm{ U }\norm{ V }$ (the Cauchy-Schwarz inequality holds for $U$ and $V$).  Then $\theta$ is uniquely determined as a real number in the interval $[0,\pi]$.
+
+\noindent \textbf{Case 2: }
+$|UV| > \norm{ U }\norm{ V }$ (the Cauchy-Schwarz inequality does not hold).  Then there's an infinite number of solutions for $\theta$, all of them complex.  By convention the chose solution:
+
+\[ 
+  \theta = 
+  \begin{cases} 
+  i \ln{ (k + \sqrt{ k^2 - 1 } ) } & k > 1 \\ 
+  \pi + i \ln{ ( -k + \sqrt{ k^2 - 1 } ) } & k < -1
+  \end{cases} 
+\]
+
+that exhibits the proper limiting behavior as $k \rightarrow 1^+$ or $k \rightarrow -1^{-1}$.
+
+
+\subsection{Null Curves}
+
+If $\mathbf{ g }$ is not required to be positive definite, a curve can have zero length.
+
+A curve is null if it or any of its subarcs has zero length.  Here, a subarc is understood to be nontrivial; that is, it consist of more than one point and corresponds to an interval $c \leq t \leq d$, where $c < d$.
+A curve is null at a point if for some value of the parameter $t$ the tangent vector is a null vector:
+
+\begin{equation*}
+	g_{ij} \frac{ dx^i }{ dt } \frac{ dx^j }{ dt } = 0
+\end{equation*}
+
+\noindent
+The set of t-values at which the curve is null is known as the null set of the curve.
+
+Under the above definitions, a curve can be null without having zero length (if there is a subarc with zero length); but a curve having zero length is necessarily null at every point, and hence a small curve.
+
+\subsubsection{Nonexistence of an Arc-Length Parameter}
+
+\noindent \textbf{Definition: }
+A curve is regular if it has no null points (i.e. $ds/dt > 0$)
+
+\subsection{Regular Curves: Unit Tangent Vector}
+
+A regular curve $x^i(s)$ be given in terms of the arc-length parameter; the tangent field is $\mathbf{ T } = dx^i / ds$.  By definition of arc length,
+
+
+\begin{equation*}
+	s = \int_0^s \norm{ \mathbf{ T }(u) } du
+\end{equation*}
+
+and differentiation gives $1 = \norm{ \mathbf{ T }(s) }$, showing that $\mathbf{ T }$ has unit length at each point of the curve.
+
+When it is incovenient or impossible to convert to the arc-length parameter, we can obtain $\mathbf{ T }$ by normalizing the tangent vector $\mathbf{ U } = dx^i / dt$:
+
+\begin{equation*}
+	\mathbf{ T } = \frac{ 1 }{ \norm{ \mathbf{ U } } } \mathbf{ U } = \frac{ 1 }{ s'(t) } \mathbf{ U }
+\end{equation*}
+
+\noindent \textbf{Theorem: }
+The absolute derivative $\delta \mathbf{ T } / \delta s$ of the unit tangent vector $\mathbf{ T }$ is orthogonal to $\mathbf{ T }$
+
+\subsection{Regular Curves: Unit Principal Normal and Curvature}
+
+Also associated with a regular curve is a vector orthogonal to the tangent vector.  It may be introduced in two ways.  1. as the normalized $\delta \mathbf{ T } / \delta s$. 2. as any differentiable unit vector
+orthogonal to $\mathbf{ T }$ and proportional to $\delta \mathbf{ T } / \delta s$ when $\norm{ \delta \mathbf{ T } / \delta s } \neq 0$.  The latter definition is global in nature,
+and it applie to a larger class of curves than does the former.
+
+\subsubsection{Analytical (local) approach}
+
+At any point of the curve at which $\norm{ \delta \mathbf{ T } / \delta s } \neq 0$, defin the unit principal normal as the vector
+
+\begin{equation}
+	\mathbf{ N }_0 = \frac{ \delta \mathbf{ T } }{ \delta s } / \norm{ \frac{ \delta \mathbf{ T } }{ \delta s } }
+\end{equation}
+
+\noindent
+The absolute curvature is the scale factor:
+
+\begin{equation}
+	\kappa_0 = \norm{ \frac{ \delta \mathbf{ T } }{ \delta s } } = \sqrt{ \epsilon g_{ij} \frac{ \delta T^i }{ \delta s } \frac{ \delta T^j }{ \delta s } }
+\end{equation}
+
+Calling this quantity "curvature" is suggestive of the fact that in rectangular coordinates $\norm{ \delta \mathbf{ T } / \delta s } = \norm{ d \mathbf{ T } / ds }$ measures the rate of change of the tangent vector with respect
+to distance, or how sharply the curve "bends" at each point.  Substitution of the two above equations yields the Frenet equations:
+
+\begin{equation}
+	\frac{ \delta \mathbf{ T } }{ \delta s } = \kappa_0 \mathbf{ N }_0
+\end{equation}
+
+While this approach is simple and consice, it does not apply to many curves we want to consider; for instance, a geodesic will not possess a local normal $\mathbf{ N }_0$ at any point.  Even if there is only
+one point of zero curvature and the metric is Euclidean, $\mathbf{ N }_0$ can have an essental point of discontinuity here.
+
+\subsubsection{Geometric (global) approach}
+
+A unit principal normal to a regular curve is any contravariant vector $\mathbf{ N } = N^i(s)$ such that along the curve:
+
+\begin{enumerate}
+	\item $N^i$ is continuously differentiable (call $C^1$) for each $i$
+	\item $\norm{ \mathbf{ N } } = 1$
+	\item $\mathbf{ N }$ is orthogonal to the unit tangent vector $\mathbf{ T }$, and is a scalara multiple of $\delta \mathbf{ T } \delta s$ wherever $\norm{ \delta \mathbf{ T } / \delta s } \neq 0$
+\end{enumerate}
+
+The curvature under this development is defined as:
+
+\begin{equation}
+	\kappa = \epsilon \mathbf{ N } \frac{ \delta \mathbf{ T } }{ \delta s } = \epsilon g_{ij} N^i \frac{ \delta T^j }{ \delta s }
+\end{equation}
+
+\noindent
+If the metric is positive definite, the Frenet equation:
+
+\begin{equation}
+	\frac{ \delta \mathbf{ T } }{ \delta s } = \kappa \mathbf{ N }
+\end{equation}
+
+\noindent
+holds unrestrictedly along a regular curve.
+
+\subsection{Geodesics as Shortest Arcs}
+
+It is possible to take a variational approach of finding the shortest path between two points.  And that curve will be a geodesic.  I have decided not to write down the derivation here.
+But it is interesting that this variational approach results in a geodesic.
+
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Riemannian Curvature}
+
+\subsection{The Riemann Tensor}
+
+The Riemann tensor emerges from an analysis of a simple question.  Starting with a covariant vector $V_i$ and taking the covariant derivative with respect to $x^j$ and then with respect
+to $x^k$ produces the third-order tensor
+
+\begin{equation*}
+	((V_i)_{,j})_{,k} = (V_{i,jk})
+\end{equation*}
+
+\noindent Does the order of differentiation matter, or does $V_{i,jk} = V_{i,kj}$ hold in general?
+
+Standard hypotheses concerning differentiability suffice to guarantee that the partial derivative of order two is order-independent,
+
+\begin{equation*}
+	\frac{ \partial^2 V_i }{ \partial x^j \partial x^k } = \frac{ \partial^2 V_i }{ \partial x^k \partial x^j }
+\end{equation*}
+
+\noindent but due to the presence of Christoffel symbols, such hypotheses do not extend to covariant differentiation.  The following formulat is established:
+
+\begin{equation}
+	V_{j,kl} - V_{j,lk} = R^i_{jkl} V_i
+\end{equation}
+
+where
+
+\begin{equation}
+	R^i_{jkl} = \frac{ \partial \Gamma^i_{jl} }{ \partial x^k } - \frac{ \partial \Gamma^i_{jk} }{ \partial x^l } + \Gamma^r_{jl} \Gamma^i_{rk} - \Gamma^r_{jk} \Gamma^i_{rl}
+\end{equation}
+
+The Quotient Theorem implies:
+
+\noindent \textbf{Theorem: }
+The $n^4$ components defined by the above equation are those of a fourth-order tensor, contravariant of order one, covariant of order three.
+
+$R^i_{jkl}$ is called the Riemann (or Riemann-Christoffel) tensor of the second kind; lowering the contravariant index produces
+
+\begin{equation}
+	R_{ijkl} = g_{ir} R^r_{jkl}
+\end{equation}
+
+\noindent the Riemann tensor of the first kind.
+
+In answer to our original question, we may now say that covariant differentiation is order-dependent unless the mteric is such as to make the Riemann tensor (either kind) vanish.
+
+\subsection{Properites of the Riemann Tensor}
+
+\subsubsection{Two Important Formulas}
+
+The Riemann tensor of the first kind can be introduced independently via the following formula:
+
+\begin{equation}
+	R_{ijkl} = \frac{ \partial \Gamma_{jli} }{ \partial x^k } - \frac{ \partial \Gamma_{jki} }{ \partial x^l } + \Gamma_{ilr} \Gamma^r_{jk} - \Gamma_{ikr} \Gamma^r_{jl}
+\end{equation}
+
+\noindent It then follows:
+
+\begin{equation}
+	R_{ijkl} = \frac{ 1 }{ 2 } \left( \frac{ \partial^2 g_{il} }{ \partial x^j \partial x^k } + \frac{ \partial^2 g_{jk} }{ \partial x^i \partial x^l } - \frac{ \partial^2 g_{ik} }{ \partial x^j \partial x^l } - \frac{ \partial^2 g_{jl} }{ \partial x^i \partial x^k }\right) + \Gamma_{ilr} \Gamma^r_{jk} - \Gamma_{ikr} \Gamma^r_{jl}
+\end{equation}
+
+\subsubsection{Symmetry Properties}
+
+Interchange of $k$ and $l$ shows that $R^i_{jkl} = -R^i_{jlk}$, whence $R_{ijkl} = -R_{ijlk}$.  This and two other symmetry properties are easily esatblished at this point:
+
+\begin{align*}
+	\text{first skew symmetry: } R_{ijkl} = -R_{jikl}\\
+	\text{second skew symmetry: } R_{ijkl} = -R_{jilk}\\
+	\text{block symmetry: } R_{ijkl} = -R_{klij}\\
+	\text{Bianchi's identity: } R_{ijkl} + R_{iklj} + R_{iljk} = 0
+\end{align*}
+
+\subsubsection{Number of Independent Components}
+
+We shall count the separate types of potentially nonzero components, using the above symmetry properties.  The first two properties imply that $R_{aacd}$ and $R_{abcc}$ (not summed on $a$ or $c$) are zero.
+In the following list, we agree not to sum on repeated indices.
+
+\begin{enumerate}
+	\item Type $R_{abab}$, $a<b$: $n_A = C_2 = n(n-1)/2$ 
+	\item Type $R_{abac}$, $b<c$: $n_A = C_2 = n(n-1)/2$
+	\item Type $R_{abcd}$ or $R_{acbd}$, $a<b<c<d$ (for type $R_{adbc}$, use Bianchi's identity): $n_C = 2 \cdot C_4 = n(n-1)(n-2)(n-3)/12$
+\end{enumerate}
+
+\noindent \textbf{Theorem: }
+There are a total of $n^2(n^2-1)/12$ components of the Riemann tensor that are not identically zero and that are independent from the rest.
+
+\noindent \textbf{Corollary: }
+In two-dimensional Riemannian space, the only components of the Riemann tensor not identically zero are $R_{1212} = R_{2121} = -R_{1221} = -R_{2112}$
+
+
+\subsection{Riemannian Curvature}
+
+The Riemannian curvature (or sectional curvature) relative to a given metric $g_{ij}$ is defined for each pair of contravariant vectors $U^i$, $V^i$ as:
+
+\begin{align}
+	\mathbf{ K } = \mathbf{ K }(\mathbf{ x };\mathbf{ U },\mathbf{ V }) = \frac{ R_{ijkl} U^i V^j U^k V^l }{ G_{pqrs} U^p V^q U^r V^s }\\
+	\text{ where } G_{pqrs} = g_{pr} g_{qs} - g_{ps} g_{qr}
+\end{align}
+
+This sort of curvature depends not only on position, but also on a pair of directions selected at each point (the vecturs $\mathbf{ U }$ and $\mathbf{ V }$).  By contrast, the curvature $\kappa$ of a curve depends only on
+the points along the curve.  Although it would seem desirable for $K$ to depend only on the points of space, to demand this would impose severe and unrealistic restrictions.
+
+\subsubsection{Observations on the Curvature Formula}
+
+If $n=2$, the above reduces to:
+
+\begin{equation}
+	K = \frac{ R_{1212} }{ g_{11}g_{22} - g^2_{12} } = \frac{ R_{1212} }{ g }
+\end{equation}
+
+\noindent Thus at a given point in Reimannain 2-space, the curvature is determined by the $g_{ij}$ and their derivatives, and is independent of the directions $\mathbf{ U }$ and $\mathbf{ V }$.
+
+If linearly independent $\mathbf{ U }$ and $\mathbf{ V }$ are replaced by independent linear combinations of themselves, the curvature is unaffected:
+
+\begin{equation}
+	K( \mathbf{x };  \lambda \mathbf{ U } + \nu \mathbf{ V }, \mu \mathbf{ U } + \omega \mathbf{ V }) = K( \mathbf{ x }; \mathbf{ U }, \mathbf{ V })
+\end{equation}
+
+\noindent Therefore, at a given point $\mathbf{x}$, the curvature will have a value, not for each pair of vectors $\mathbf{ U }$ and $\mathbf{ V }$, but for each 2-flat passing through $\mathbf{ x }$.
+
+\subsubsection{Isotropic Points}
+
+If the Riemannian curvature at $\mathbf{x}$ does not change with orientation of a 2-flat through $\mathbf{x}$, then $\mathbf{x}$ is called isotropic.
+
+\noindent \textbf{Theorem: }
+All points of a two-dimensional Riemannian space are isotropic
+
+It is not immediately clear whether any metric $g_{ij}$ could lead to isotropic points in $\mathbf{ R }^n$, $n \geq 3$.
+
+
+\subsection{The Ricci Tensor}
+
+A brief look will be given a tensor that is of importance in Relativity.  The Ricci tensor of the first kind is defined as a contraction of the Riemann tensor of the second kind:
+
+\begin{equation}
+	R_{ij} = R^k_{ijk} = \frac{ \partial \Gamma^k_{ik} }{ \partial x^j } - \frac{ \partial \Gamma^k_{ij} }{ \partial x^k } + \Gamma^r_{ik} \Gamma^k_{rj} - \Gamma^r_{ij} \Gamma^k_{rk}
+\end{equation}
+
+\noindent Raising an index yields the Ricci tensor of the second kind:
+
+\begin{equation}
+	R^i_j = g^{ik} R_{kj}
+\end{equation}
+
+By use of the consequence of Laplace's expansion:
+
+\begin{equation}
+	R_{ij} = \frac{ \partial^2 }{ \partial x^i \partial x^j }(\ln{ \sqrt{ |g| } }) - \frac{ 1 }{ \sqrt{ |g| } } \frac{ \partial }{ \partial x^r } (\sqrt{ |g| } \Gamma^r_{ij}) + \Gamma^r_{is} \Gamma^s_{rj}
+\end{equation}
+
+\noindent \textbf{Theorem: }
+The Ricci tensor is symmetric
+
+After raising a subscript to define the Ricci tensor fo the second kind, $R^i_j = g^{is} R_{sj}$, and then contracting on the remaining pair of indices, the important invariant $R = R^i_j$ results, called the Ricci (or scalar) curvature.
+
+\begin{equation}
+	R = g^{ij} \left[ \frac{ \partial^2 }{ \partial x^i \partial x^j }(\ln{ \sqrt{ |g| } }) - \frac{ 1 }{ \sqrt{ |g| } } \frac{ \partial }{ \partial x^r } (\sqrt{ |g| } \Gamma^r_{ij}) + \Gamma^r_{is} \Gamma^s_{rj} \right]
+\end{equation}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Spaces of Constant Curvature; Normal Coordinates}
+
+\subsection{Zero Curvature and the Euclidean Metric}
+
+\noindent \textbf{Definition: }
+A Riemannian metric $\mathbf{ g } = g_{ij}$, specified in a coordinate system $x^i$, is the Euclidean metric if, under some permissible coordinate transformation, $\overline{ \mathbf{ g } } = \delta_{ij}$
+
+\noindent \textbf{Theorem: }
+A Riemannian metric $g_{ij}$ is the Euclidean metric if and only if the Riemannian curvature $K$ is zero at all points and the metric is postivie definite.
+
+\subsection{Flat Riemannian Spaces}
+
+\noindent \textbf{Theorem: }
+A Riemannian space is falt if and only if $K = 0$ at all points
+
+\noindent \textbf{Corollary: }
+If $K = 0$, then $R = 0$.
+
+\subsection{Normal Coordinates}
+
+It is possible to introduce local, quasirectangular coordinates in Riemannian space the use of which greatly simplifies the proofs of certain complicated tensor indentities.
+
+Let $O$ denote an arbitrary point of $\mathbf{ R }^n$, and $\mathbf{ p } = p^i$ an arbitrary direction (unit vector) at $O$.  Assuming a positive-definite metric, consider the differential equations for geodesics,
+
+\begin{equation}
+	\frac{ d^2 x^i }{ ds^2 } + \Gamma^i_{jk} \frac{ dx^j }{ ds } \frac{ dx^k }{ ds } = 0
+\end{equation}
+
+along with initial conditions:
+
+\begin{equation}
+	\frac{ dx^i }{ ds } |_{s=0} = p^i
+\end{equation}
+
+\noindent \textbf{Remark: }
+Under an indefinite metric, there could exist directions at $O$ in which arc length could not be defined.  There would then be no hope of satisfying the above with $p^i$ arbitrary.
+
+\noindent \textbf{Theorem: }
+If the metric tensor $g_{ij}$ is positive definite, then, at the origin of a Riemannian coordinate system $y^i$, all $\partial g_{ij} / \partial y^k$, $\partial g^{ij} / \partial y^k$, $\Gamma_{ijk}$, and $\Gamma^i_{jk}$ are zero.
+
+
+\subsection{Schur's Theorem}
+
+\noindent \textbf{Remark: }
+At an isotropic point of $\mathbf{ R }^n$ the Riemannian curvature is given by:
+
+\begin{equation}
+	K = \frac{ R_{abcd} }{ g_{ac} g_{bc} - g_{ad} g_{bc} } = \frac{ R_{abcd} }{ G_{abcd} }
+\end{equation}
+
+\noindent for any specific subscript string such that $G_{abcd} \neq 0$. (If $G_{abcd} = 0$, then $R_{abcd} = 0$ also)
+
+\noindent \textbf{Schur's Theorem: }
+If all points in some neighborhood $\mathscr{ N }$ in a Riemannian $\mathbf{ R }^n$ are isotropic and $n \geq 3$, then $K$ is constant throught that neighborhood.
+
+
+\subsection{The Einstein Tensor}
+
+The Einstein tensor is defined in terms of the Ricci tensor $R_{ij}$ and the curvature invariant $R$:
+
+\begin{equation}
+	G^i_j = R^i_j - \frac{ 1 }{ 2 } \delta^i_j R
+\end{equation}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Tensors in Euclidean Geometry (Differential Geometry)}
+
+\subsection{Curve Theory}
+
+Given a curve defined by a position vector:
+
+\begin{equation}
+	\mathbf{ r }( t ) = ( x(t), y(t), z(t) )
+\end{equation}
+
+\subsubsection{Regular Curves}
+
+The tangent vector of the curve is given by:
+
+\begin{equation}
+	\frac{ d \mathbf{ r } }{ dt } = \dot{ \mathbf{ r } } = \left( \frac{ dx }{ dt }, \frac{ dy }{ dt }, \frac{ dz }{ dt } \right)
+\end{equation}
+
+\noindent
+is said to be regular if $\dot{ \mathbf{ r } }(t) \neq \mathbf{ 0 }$ for each $t$.
+
+
+\subsubsection{Arc Length}
+
+Every regular curve can parametrized by an arc lenght parameter $\mathbf{ r } = \mathbf{ r }(s)$, such that
+
+\begin{equation}
+	s = \int_a^t \norm{ \frac{ d \mathbf{ r } }{ du } } du
+\end{equation}
+
+or
+
+\begin{equation}
+	\frac{ ds }{ dt } = \norm{ \dot{ \mathbf{ r } } }
+\end{equation}
+
+The dot means differentiation with respect to $t$.  While a prime is differentiation with respect to $s$.  This implies a mapping $t \rightarrow s$ and an inverse mapping $s \rightarrow t$ given by $t = \Phi(s)$, where $Phi$ is also differentiable:
+
+\begin{equation}
+	\frac{ dt }{ ds } = \Phi'(s) = \frac{ 1 }{ \norm{ \dot{ \mathbf{ r } } } }
+\end{equation}
+
+
+
+\subsubsection{The Moving Frame}
+
+The three vectors of fundamental importance to curve theory are the tangent vector, the normal vector, and the binormal.
+
+\begin{equation}
+	\mathbf{ T } = \mathbf{ r }' = \left( \frac{ dx }{ ds }, \frac{ dy }{ ds }, \frac{ dz }{ ds } \right)
+\end{equation}
+
+The principal normal is then the direction of change of the tangent.  And the bitangent is $\mathbf{ B } = \mathbf{ T } \times \mathbf{ N }$.  Here the three vectors written in differential form:
+
+\begin{align*}
+	\mathbf{ T } = \frac{ \dot{ \mathbf{ r } } }{ \norm{ \dot{ \mathbf{ r } } } }\\
+	\mathbf{ N } = \epsilon \frac{ (\dot{ \mathbf{ r } } \dot{ \mathbf{ r } }) \ddot{ \mathbf{ r } } - ( \dot{ \mathbf{ r } } \ddot{ \mathbf{ r } } ) \dot{ \mathbf{ r } } }{ \norm{ \dot{ \mathbf{ r } } } \norm{ \dot{ \mathbf{ r } } \times \ddot{ \mathbf{ r } } } }\\
+	\mathbf{ B } = \epsilon \frac{ \dot{ \mathbf{ r } } \times \ddot{ \mathbf{ r } } }{ \norm{ \dot{ \mathbf{ r } } \times \ddot{ \mathbf{ r } } } }
+\end{align*}
+
+Here, $\epsilon$ is plus or minus one, depending on the choice of $\mathbf{ N }$.
+
+
+\subsection{Curvature and Torsion}
+
+The curvature $\kappa$ and torsion $\tau$ of a curve are the real numbers:
+
+\begin{align}
+	\kappa = \mathbf{ N } \mathbf{ T }'\\
+	\tau = -\mathbf{ N } \mathbf{ B }'
+\end{align}
+
+Serret-Frenet Formulas:  The derivatives of the vectors composing the moving traid are given by:
+
+\begin{equation}
+	\begin{pmatrix}
+		\mathbf{T}'\\
+		\mathbf{N}'\\
+		\mathbf{B}'
+	\end{pmatrix}
+	=\\
+	\begin{pmatrix}
+	0 & \kappa & 0\\
+	-\kappa & 0 & \tau\\
+	0 & -\tau & 0
+	\end{pmatrix}\\
+	\begin{pmatrix}
+		\mathbf{T}\\
+		\mathbf{N}\\
+		\mathbf{B}
+	\end{pmatrix}
+\end{equation}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
