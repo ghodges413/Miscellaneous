@@ -1,0 +1,1046 @@
+%
+%	Pre-amble
+%
+
+\documentclass{article}
+%\documentclass[11pt,a4paper]{report}
+%\documentclass{book}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{float} %used for figures
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=blue,
+}
+
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+% Custom Margins
+\addtolength{\oddsidemargin}{-.875in}
+\addtolength{\evensidemargin}{-.875in}
+\addtolength{\textwidth}{1.75in}
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
+
+\lstdefinestyle{CStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\footnotesize,
+%    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                  %controls automatic wrap around
+   frame=single,
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=none,%left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C++
+}
+
+\usepackage{fontspec}
+\setmainfont[Ligatures=TeX]{Gadugi}
+\setsansfont[Ligatures=TeX]{Arial}
+
+
+%
+%	Begin the Document
+%
+
+\begin{document}
+
+
+%\begin{document}
+\title{Analytical Mechanics Notes}
+\author{Gregory Hodges}%\\Version 1.00}
+\date{Version 0.01}
+%\date{2021}
+\maketitle
+%\end{document}
+
+%\begin{abstract}
+%The abstract text goes here.
+%\end{abstract}
+
+
+%
+%	Table of Contents
+%
+
+\tableofcontents
+
+%
+%	Chapter
+%
+\newpage
+\section{Overview}
+
+This is a basic overview of Lagrangian and Hamiltonian mechanics.  It is typically taught at the advanced undergraduate and graduate levels.  While it is likely unnecessary to study these topics for game physics, I think it is good for the motivated student to be introduced to the subject.  Also note that these are transcriptions of my own personal notes; there may be errors, and for clarification, the resources listed as references should be consulted.
+
+The techniques of analytical mechanics allow one to easily derive the equations of motion for physical situations that would otherwise be extraordinarily difficult using Newton's methods.  It also turns out that Hamiltonians are used widely in the field of quantum mechanics, and therefore the study of analytical mechanics is a pre-requisite for more advanced topics of physics.
+
+First, we will introduce the calculus of variations, as it is a mathematical tool that we will need to derive Lagrange's equations.  Then we will introduce the Lagrangian and Hamiltionan and give example applications of both for time indepenedent holonomic constraints.  Then we will introduce the method of lagrange multipliers for time dependent holonomic constraints.  And finally we re-introduce Lagrangians and Hamiltonians for time dependent constraints.
+
+For quick reference the following are the equations that are significant to the methods of analytical mechanics.
+
+Holonomic constraint:
+
+$$f( q_1, q_2, ..., q_n, t ) = 0$$
+
+
+Lagrange Multipliers:
+
+$$\mathcal{ L }( x, y, \lambda ) = f( x, y ) + \lambda g( x, y )$$
+$$\nabla f( x, y ) = \lambda \nabla g( x, y )$$
+
+Definition of the Lagrangian:
+
+$$L = T - V$$
+
+Euler-Lagrange equation:
+
+$$\frac{ \partial L }{ \partial q_k } - \frac{ d }{ dt } \Big( \frac{ \partial L }{ \partial \dot{ q }_k } \Big) = 0$$
+
+Forces of Constraint:
+
+$$Q_i = \sum_{j=1}^k \lambda_j \frac{ \partial f_j }{ \partial q_i }$$
+
+Definition of the Hamiltonian:
+
+$$H = \sum_k \dot{ q }_k p_k - L$$
+
+Hamilton's canonical equations:
+
+$$\frac{ \partial H }{ \partial p_k } = \dot{ q }_k$$
+$$\frac{ \partial H }{ \partial q_k } = -\dot{ p }_k$$
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Lagrange Multipliers}
+
+Suppose we have some function.  It doesn't really matter what the function describes.
+
+$$f( x, y )$$
+
+But, we want to find the minimum/maximum of the function with regards to some external requirement; let's call it a constraint.
+
+$$g( x, y ) = c$$
+
+Under normal circumstances, finding the minimum/maximum just requires that we find where the slope of the function is zero.  And we do that by taking the derivative of the function and setting it to zero.  But, because of the constraint, we also need to account for the function's intersection with the constraint, but only when it's just touching.  So, the two functions need to intersect, but their slopes need to be parallel.  Another way of stating this, is that their gradients have to be a scalar multiple of each other.
+
+$$\nabla f( x, y ) = \lambda \nabla g( x, y )$$
+
+Where $\lambda$ is a scalar, and it is called a Lagrange multiplier.  And if there's $N$ constraints then we can write:
+
+$$\nabla f( x, y ) = \sum_n^N \lambda_n \nabla g_n( x, y )$$
+
+%
+%	
+%
+\subsection{Example 1}
+
+Suppose we want to build a box where the volume is maximized, but we have a limited amount of cardboard to build it.  Let's assume the box open on the top, and we only have 10 square meters of material.
+
+The function we want to maximize is the volume:
+
+$$f( x, y, z ) = xyz$$
+
+And the constraint is the surface area of the material:
+
+$$g( x, y, z ) = 2xz + 2yz + xy = 10$$
+
+Therefore taking the gradients and setting them equal gives:
+
+$$f_x = yz = \lambda ( 2z + y ) = \lambda g_x$$
+$$f_y = xz = \lambda ( 2z + x ) =\lambda g_y$$
+$$f_z = xy = \lambda ( 2x + 2y ) =\lambda g_z$$
+
+This gives us four equations and four unkowns.  So now it's just a matter of algebra to solve these equations.
+
+$$yz = \lambda ( 2z + y )$$
+$$xz = \lambda ( 2z + x )$$
+$$xy = \lambda ( 2x + 2y )$$
+$$2xz + 2yz + xy = 10$$
+
+%
+%	
+%
+\subsection{Example 2}
+
+Suppose the function we want to find the max/min of is:
+
+$$f( x, y ) = 4x^2 - 2y$$
+
+And the constraint is:
+
+$$g( x, y, z ) = x^2 + y^2 = 1$$
+
+This gives us the following equations:
+
+$$8x = \lambda 2x$$
+$$-2 = \lambda 2y$$
+$$x^2 + y^2 = 1$$
+
+Rearranging the first equation gives:
+
+$$8x - 2x \lambda = 0$$
+$$2x( 4 - \lambda ) = 0$$
+
+This implies that either $x=0$ or $\lambda=4$.  If $x=0$ then we get:
+
+$$y^2 = 1$$
+
+Which means that two possible solutions are (0,1) or (0,-1).  Now, let's examine when $\lambda=4$:
+
+$$y = -\frac{ 1 }{ 4 }$$
+$$x^2 + \frac{ 1 }{ 16 } = 1$$
+
+This implies that $x=\frac{ \sqrt{ 15 } }{ 4 }$ or $x = -\frac{ \sqrt{ 15 } }{ 4 }$.  Which means we have two new possible solutions, $( \frac{ \sqrt{ 15 } }{ 4 }, -\frac{ 1 }{ 4 } )$ and $( -\frac{ \sqrt{ 15 } }{ 4 }, -\frac{ 1 }{ 4 } )$.  In order to determine which points are the absolute maximum and absolute minimum, we can just plug them back into the original function:
+
+$$f( 0, 1 ) = -2$$
+$$f( 0, -1 ) = 2$$
+$$f( \frac{ \sqrt{ 15 } }{ 4 }, -\frac{ 1 }{ 4 } ) = 15/4 + 1/2 = 17/4$$
+$$f( -\frac{ \sqrt{ 15 } }{ 4 }, -\frac{ 1 }{ 4 } ) = 15/4 + 1/2 = 17/4$$
+
+This gives two points as an absolute maximum and one point as an absolute minimum.
+
+%
+%	
+%
+\subsection{Example 3}
+
+Suppose the function we want to find the max/min of is:
+
+$$f( x, y ) = x^2 + 2y^2$$
+
+And the constraint is:
+
+$$g( x, y, z ) = x^2 + y^2 \leq 1$$
+
+This makes a slightly different situation.  Because this is a non-holonomic constraint.  Which means that for the region of the function where $x^2 + y^2 < 1$, we simply have to search for min/max in the usual way (look for a gradient that is zero).  And in the region where $x^2 + y^2 = 1$, use the lagrange multiplier method.
+
+$$f_x = 2x$$
+$$f_y = 4y$$
+
+As we can see, the gradient of $f$ is zero at the point $( 0, 0 )$.  Which is a critical point that could be a max or a min.  And now we can proceed with lagrange multipliers to get the critical points on the constraint.
+
+$$2x = 2x\lambda$$
+$$4y = 2y\lambda$$
+$$x^2 + y^2 = 1$$
+
+Similar to the previous problem, we have multiple solutions:
+
+$$2x( 1 - \lambda ) = 0$$
+$$2y( 2 - \lambda ) = 0$$
+$$x^2 + y^2 = 1$$
+
+If $x = 0$ then $y = 1$ or $y = -1$.  If $\lambda = 1$, then $y = 0$.  Likewise if $y = 0$ then $x = 1$ or $x= -1$.  If $\lambda = 2$, then $x = 0$.  So, we now have five total points to inspect:
+
+$$f( 0, 0 ) = 0$$
+$$f( 0, -1 ) = 2$$
+$$f( 0, 1 ) = 2$$
+$$f( -1, 0 ) = 1$$
+$$f( 1, 0 ) = 1$$
+
+This gives $( 0, 0 )$ as the minimum and the points $( 0, -1 )$, $( 0, 1 )$ as the maximums.
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Calculus of Variations}
+
+What if you had some sort of criteria to satisfy, but you didn't know the function that would describe it?  For instance, if you had a chain or rope that was nailed on a wall at its end points, what is the shape the chain would take?  Or if you had a particle sliding down a frictionless ramp, what shape should the incline have to minimize the time taken to reach the bottom?
+
+These are the sorts of problems that variational calculus aims to solve.  Let's begin with a simpler problem though.  What is the shortest distance between two points?  Obviously this is a straight line.  However, let's formalize our argument.
+
+The infinitesimal distance of a curve is:
+
+
+\begin{equation}
+ds = \sqrt{ dx^2 + dy^2 }
+\end{equation}
+
+Then the total length of the curve from pt a to pt b is:
+
+\begin{align*}
+I = \int_{a}^{b} ds
+= \int_{a}^{b} \sqrt{ dx^2 + dy^2 }\\
+= \int_{a}^{b} \sqrt{ 1 + \frac{ dy^2 }{ dx^2 } } dx\\
+= \int_{a}^{b} \sqrt{ 1 + y'^2 } dx\\
+= \int_{a}^{b} \phi( x, y, y' ) dx
+\end{align*}
+
+where:
+$$\phi( x, y, y' ) = \sqrt{ 1 + y'^2 }$$
+
+is called a functional.  And we want to know what function would minimize the value of the integral.  Mind you, we're not trying to solve the functional, we want to solve for $y( x )$.  Also note that there are other functionals in the world.  We will use this one as our first example of how to solve these sorts of problems.
+
+%
+%
+%
+\subsection{Euler-Lagrange Derivation}
+
+Let's define a couple of new functions:
+
+$$Y( x ) = y( x ) + \alpha \eta( x )$$
+
+Where $y( x )$ is still the function we're looking for, $\alpha$ is just some numerical constant, and $\eta( x )$ is any function that is zero at the end points.  Or specifically,
+
+$$\eta( a ) = 0$$
+$$\eta( b ) = 0$$
+
+We can now write the integral as:
+
+$$I( \alpha ) = \int_a^b \phi( x, Y, Y' ) dx$$
+
+Then let's peform a Taylor series expansion of $I$:
+
+$$I( \alpha ) = I( 0 ) + \frac{ dI( 0 ) }{ d\alpha } + ...$$
+
+And if we throw away the higher order terms, then we get: (this is hand wavy, give a better proof... I think it's because when $\alpha$ goes to zero the higher order terms disappear)
+
+$$\frac{ dI( 0 ) }{ d\alpha } = I( \alpha ) - I( 0 )$$
+
+This is also known as the variation $\delta I$.  And we are looking for when the variation is zero.  This means that to find the correct $y( x )$ we need to take the derivative of the action integral with respect to $\alpha$ and set it to zero.
+
+$$\frac{ d }{ d\alpha } \int_a^b \phi( x, Y, Y' ) dx = 0$$
+
+This gives:
+
+$$\int_a^b \frac{ \partial \phi }{ \partial Y } \frac{ \partial Y }{ \partial \alpha } + \frac{ \partial \phi }{ \partial Y' } \frac{ \partial Y' }{ \partial \alpha } dx = 0$$
+
+Now, let's focus on the second term of the integral:
+
+$$\int_a^b \frac{ \partial \phi }{ \partial Y' } \frac{ \partial Y' }{ \partial \alpha } dx = 0$$
+
+This can be integrated by parts:
+
+$$\int_a^b \frac{ \partial \phi }{ \partial Y' } \frac{ \partial }{ \partial \alpha } \frac{ dY }{ dx } dx$$
+$$ = \int_a^b \frac{ \partial \phi }{ \partial Y' } \frac{ d }{ dx } \frac{ \partial Y }{ \partial \alpha } dx$$
+$$ = \int_a^b \frac{ \partial \phi }{ \partial Y' } d( \frac{ \partial Y }{ \partial \alpha } )$$
+$$ = \frac{ \partial \phi }{ \partial Y' } \frac{ \partial Y }{ \partial \alpha } \Big|_a^b - \int_a^b \frac{ d }{ dx } ( \frac{ \partial \phi }{ \partial Y' } ) \frac{ \partial Y }{ \partial \alpha } dx$$
+
+Now, the left hand side evaluates to zero.  The reason is because $Y( x ) = y( x ) + \alpha \eta( x )$ so $\frac{ dY }{ d\alpha } = \eta( x )$.  And by defintion, we know that $\eta( x )$ evaluates to zero at the endpoints.  So then we have:
+
+$$\int_a^b \frac{ \partial \phi }{ \partial Y' } \frac{ \partial }{ \partial \alpha } \frac{ dY }{ dx } dx = - \int_a^b \frac{ d }{ dx } ( \frac{ \partial \phi }{ \partial Y' } ) \frac{ \partial Y }{ \partial \alpha } dx$$
+
+So, now plugging this back into our previous equation:
+
+$$\frac{ d }{ d\alpha } \int_a^b \phi( x, Y, Y' ) dx$$
+$$ = \int_a^b \frac{ \partial \phi }{ \partial Y } \frac{ \partial Y }{ \partial \alpha } + \frac{ \partial \phi }{ \partial Y' } \frac{ \partial Y' }{ \partial \alpha } dx$$
+$$ = \int_a^b \frac{ \partial \phi }{ \partial Y } \frac{ \partial Y }{ \partial \alpha } - \frac{ d }{ dx } ( \frac{ \partial \phi }{ \partial Y' } ) \frac{ \partial Y }{ \partial \alpha } dx$$
+$$ = \int_a^b \Big[ \Big( \frac{ \partial \phi }{ \partial Y } - \frac{ d }{ dx } ( \frac{ \partial \phi }{ \partial Y' } ) \Big) \frac{ \partial Y }{ \partial \alpha } \Big]_{\alpha = 0} dx = 0$$
+
+If we recall, $\frac{ \partial Y }{ \partial \alpha } = \eta( x )$, then if we have an integral of the form:
+
+$$\int_a^b f( x ) \eta( x ) dx = 0$$
+
+as it turns out, this is only true if $f( x ) = 0$.  Which means that:
+
+$$\Big[ \frac{ \partial \phi }{ \partial Y } - \frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial Y' } \Big) \Big]_{\alpha = 0 }= 0$$
+
+or equivalently:
+
+\begin{equation}
+\frac{ \partial \phi }{ \partial y } - \frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial y' } \Big)= 0
+\end{equation}
+
+Believe it or not, this is the relationship that we've been trying to find.  This is known as the Euler-Lagrange equation.  And with it, we can solve a slew of problems.
+
+%
+%
+%
+\subsection{Shortest Path}
+
+So let's go ahead and use it to solve our original functional for the shortest path between two points:
+
+$$\phi( x, y, y' ) = \sqrt{ 1 + y'^2 }$$
+
+Noting that our functional is independent of $y$, then $\frac{ \partial \phi }{ \partial y } = 0$ and this leaves us with just:
+
+$$-\frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial y' } \Big) = 0$$
+
+This implies that:
+
+$$\frac{ \partial \phi }{ \partial y' } = c$$
+
+where $c$ is just some constant.  So, now we have:
+
+$$\frac{ y' }{ \sqrt{ 1 + y'^2 } } = c$$
+$$y'^2 = c^2 ( 1 + y'^2 )$$
+$$( 1 - c^2 )y'^2 = c^2$$
+$$y'^2 = \frac{ c^2 }{ 1 - c^2 }$$
+$$y' = m$$
+
+in this last step, I've substituted $m$ for $\frac{ c^2 }{ 1 - c^2 }$ since they're both just constants.  And continuing we get:
+
+$$\frac{ dy }{ dx } = m$$
+$$dy = m dx$$
+
+And then integrating both sides we get the familiar:
+
+$$y = mx + b$$
+
+proving that the shortest path between two points is a straight line.
+
+
+%
+%
+%
+\subsection{Shortest Path on a Sphere}
+
+
+%
+%
+%
+\subsection{Beltrami Identity}
+
+The Beltrami idenity is a special case of the Euler-Lagrange equation.  The special case is when:
+
+$$\frac{ \partial \phi }{ \partial x } = 0$$
+
+Starting with the Euler-Lagrange equation:
+
+$$\frac{ \partial \phi }{ \partial y } - \frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial y' } \Big)= 0$$
+
+$$\frac{ \partial \phi }{ \partial y } = \frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial y' } \Big)$$
+
+$$y' \frac{ \partial \phi }{ \partial y } = y' \frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial y' } \Big)$$
+
+From the chain rule:
+
+$$\frac{ d\phi }{ dx } = \frac{ \partial \phi }{ \partial x } + \frac{ \partial \phi }{ \partial y } \frac{ \partial y }{ \partial x } + \frac{ \partial \phi }{ \partial y' } \frac{ \partial y' }{ \partial x }$$
+$$ = \frac{ \partial \phi }{ \partial x } + \frac{ \partial \phi }{ \partial y } y' + \frac{ \partial \phi }{ \partial y' } y''$$
+$$ = \frac{ \partial \phi }{ \partial x } + y' \frac{ \partial \phi }{ \partial y } + y'' \frac{ \partial \phi }{ \partial y' }$$
+$$y' \frac{ \partial \phi }{ \partial y } = \frac{ d\phi }{ dx } - \frac{ \partial \phi }{ \partial x } - y'' \frac{ \partial \phi }{ \partial y' }$$
+
+Putting this result into the previous equation:
+
+$$\frac{ d\phi }{ dx } - \frac{ \partial \phi }{ \partial x } - y'' \frac{ \partial \phi }{ \partial y' } = y' \frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial y' } \Big)$$
+$$\frac{ d\phi }{ dx } - \frac{ \partial \phi }{ \partial x } - y'' \frac{ \partial \phi }{ \partial y' } - y' \frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial y' } \Big) = 0$$
+$$\frac{ d\phi }{ dx } - y'' \frac{ \partial \phi }{ \partial y' } - y' \frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial y' } \Big) = \frac{ \partial \phi }{ \partial x }$$
+$$\frac{ d\phi }{ dx } - \frac{ dy' }{ dx } \frac{ \partial \phi }{ \partial y' } - y' \frac{ d }{ dx } \Big( \frac{ \partial \phi }{ \partial y' } \Big) = \frac{ \partial \phi }{ \partial x }$$
+$$\frac{ d\phi }{ dx } - \frac{ d }{ dx } \Big( y' \frac{ \partial \phi }{ \partial y' } \Big) = \frac{ \partial \phi }{ \partial x }$$
+$$\frac{ d }{ dx } \Big( \phi - y' \frac{ \partial \phi }{ \partial y' } \Big) = \frac{ \partial \phi }{ \partial x }$$
+
+And this is equal to zero, since we've already declared we want to discuss the special case of $\frac{ \partial \phi }{ \partial x } = 0$:
+
+$$\frac{ d }{ dx } \Big( \phi - y' \frac{ \partial \phi }{ \partial y' } \Big) = 0$$
+
+From the properties of derivatives, this implies:
+
+\begin{equation}
+\phi - y' \frac{ \partial \phi }{ \partial y' } = C
+\end{equation}
+
+Where $C$ is a constant.  And this is the Beltrami identity.
+
+
+
+
+%
+%
+%
+\subsection{Brachistochrone Problem}
+
+What is the shape of a ramp that allows a particle to reach the bottom in the shortest time?  That question is the brachistochrone problem.
+
+Let's start with the time it takes for a particle travel a distance:
+
+$$s = v t$$
+$$t = \frac{ s }{ v }$$
+$$t = \int_a^b \frac{ ds }{ v }$$
+
+Knowing that kinetic energy is related potential energy, we can express velocity in terms of height:
+
+$$\frac{ 1 }{ 2 }mv^2 = mgy$$
+$$v = \sqrt{ 2gy }$$
+
+And if we also recall that:
+
+$$ds = \sqrt{ dx^2 + dy^2 } = \sqrt{ 1 + y'^2 } dx$$
+
+Then the time it takes for the particle to traverse the path is given by:
+
+$$t = \int_a^b \frac{ \sqrt{ 1 + y'^2 } }{ \sqrt{ 2gy } } dx$$
+$$ = \int_a^b \sqrt{ \frac{ 1 + y'^2 }{ 2gy } } dx$$
+
+This means our functional is:
+
+$$\phi = \sqrt{ \frac{ 1 + y'^2 }{ 2gy } }$$
+
+Noting that $\phi$ is not an explicit function of $x$ means that $\frac{ \partial \phi }{ \partial x } = 0$ and we can therefore use the Beltrami identity instead of the full blown Euler-Lagrange equations.  But first, let's take the partial derivative with respect to $y'$:
+
+$$\frac{ \partial \phi }{ \partial y' } = \frac{ y' }{ \sqrt{ 1 + y'^2 }\sqrt{ 2gy } }$$
+
+And plugging this into the Beltrami identity:
+
+$$\sqrt{ \frac{ 1 + y'^2 }{ 2gy } } - \frac{ y'^2 }{ \sqrt{ 1 + y'^2 }\sqrt{ 2gy } } = C$$
+$$\frac{ 1 + y'^2 }{ \sqrt{ 1 + y'^2 }\sqrt{ 2gy } } - \frac{ y'^2 }{ \sqrt{ 1 + y'^2 }\sqrt{ 2gy } } = C$$
+$$\frac{ 1  }{ \sqrt{ 1 + y'^2 }\sqrt{ 2gy } } = C$$
+$$\frac{ 1  }{ 1 + y'^2 } = 2gC^2y$$
+$$\frac{ 1  }{ 2gC^2 } = \Big( 1 + y'^2 \Big)y$$
+$$k = \Big[ 1 + \Big( \frac{ dy }{ dx } \Big)^2 \Big]y$$
+
+Where $k$ is just a replacement for the bulky $\frac{ 1  }{ 2gC^2 }$
+
+$$k = y + yy'^2$$
+$$k - y = yy'^2$$
+$$1 = \frac{ y }{ k - 1 }y'^2$$
+$$dx = \sqrt{ \frac{ y }{ k -y } }dy$$
+
+$$x = \int \sqrt{ \frac{ y }{ k - y } }dy$$
+
+Now, if we look at some integration tables, then we can assume $y$ is a function of the form:
+
+$$y = k \sin^2t$$
+
+Then our integrand becomes:
+
+$$\int \sqrt{ \frac{ k \sin^2t }{ k - k \sin^2 t } } 2k \sin t \cos t dt$$
+$$ = \int \sqrt{ \frac{ \sin^2 t }{ \cos^2 t } } 2k \sin t \cos t dt$$
+$$ = 2k \int \sin^2{ t } dt$$
+
+And then pulling out some old trig identities we can write this as:
+
+$$ = k \int{ 1 - \cos{ 2t } } dt$$
+$$ = kt - \frac{ k }{ 2 } \sin{ 2t }$$
+
+And this gives us the following parametric equations for the shape of the curve:
+
+$$x(t) = kt - \frac{ k }{ 2 } \sin{ 2t }$$
+$$y(t) =  \frac{ k }{ 2 } - \frac{ k }{ 2 } \cos{ 2t }$$
+
+This shape is known as the cycloid.
+
+%
+%
+%
+\subsection{Catenary Problem}
+
+The Catenary problem is the name of the hanging rope or chain problem.  The exercise is simple, hang a rope/chain by its endpoints.  What then is the shape of the chain?
+
+You can probably guess that it would take whatever shape minimizes the potential energy of the chain.  And you'd be correct.
+
+Potential energy for a point mass is given by:
+
+$$U = mgy$$
+
+So for a long rope/chain it would be:
+
+$$U = \int gydm = \int gy \rho \sqrt{ 1 + y'^2 }dx = g \rho \int y \sqrt{ 1 + y'^2 }dx$$
+
+There is another layer to this problem.  And that is that the rope has a specific length.
+
+$$\mathcal{ L } = \int \sqrt{ 1 + y'^2 } dx$$
+
+This additional constraint requires that we use Lagrange multipliers.  The Lagrangian is:
+
+$$L = y \sqrt{ 1 + y'^2 } + \lambda \sqrt{ 1 + y'^2 }$$
+
+Plugging this into the Euler-Lagrange equation yields:
+
+$$\frac{ d }{ dx } \Big( \frac{ ( y + \lambda ) y' }{ \sqrt{ 1 + y'^2 } } \Big) = \sqrt{ 1 + y'^2 }$$
+
+Performing the differentiation gives:
+
+$$\frac{ y'^2 }{ ( 1 + y'^2 )^\frac{ 1 }{ 2 } } + \frac{ ( y + \lambda )y'' }{ ( 1 + y'^2 )^\frac{ 1 }{ 2 } } - \frac{ ( y + \lambda )y'^2 y'' }{ ( 1 + y'^2 )^\frac{ 3 }{ 2 } } = \sqrt{ 1 + y'^2 }$$
+
+$$( y + \lambda )y'' = ( 1 + y'^2 )$$
+$$\frac{ y'' }{ ( 1 + y'^2 ) } = \frac{ 1 }{ ( y + \lambda ) }$$
+$$\frac{ y'y'' }{ ( 1 + y'^2 ) } = \frac{ y' }{ ( y + \lambda ) }$$
+
+Integrating both sides by dx:
+
+$$\frac{ 1 }{ 2 }\ln( 1 + y'^2 ) = \ln( y + \lambda ) + C$$
+$$1 + y'^2 = \alpha( y + \lambda )$$
+
+$$dx = \frac{ dy }{ \sqrt{ \alpha^2 ( y + \lambda^2 ) - 1 } }$$
+
+From an integral table:
+$$\cosh^{-1}z = \int \frac{ 1 }{ \sqrt{ z^2 - 1 } }$$
+$$y( x ) = \frac{ 1 }{ \alpha }\cosh \alpha( x + a ) - \lambda$$
+
+From the bvp of $y'( 0 ) = 0$, then $a = 0$
+
+$$y( x ) = \frac{ 1 }{ \alpha }\cosh \alpha( x ) - \lambda$$
+
+
+
+
+
+ 
+
+%
+%	Chapter
+%
+\newpage
+\section{Lagrangian Mechanics}
+
+The Lagrangian is defined as the kinetic energy minus the potential energy:
+
+\begin{equation}
+L = T - V
+\end{equation}
+
+And as a reminder the Euler-Lagrange equation:
+
+\begin{equation}
+\frac{ \partial L }{ \partial q_k } - \frac{ d }{ dt } \Big( \frac{ \partial L }{ \partial \dot{ q }_k } \Big) = 0
+\end{equation}
+
+These two, in combination, can be used to solve all kinds of problems that would otherwise be far too difficult to solve with Newton's methods.
+
+Now, just for funsies, let's go ahead and re-derive the Euler-Lagrange equation by trying to minimize the Lagrangian:
+
+$$\delta \int_{t_1}^{t_2} L dt = \int_{t_1}^{t_2} \delta L dt = \int_{t_1}^{t_2} \sum_k \Big( \frac{ \partial L }{ \partial q_k } \delta q_k + \frac{ \partial L }{ \partial \dot{ q }_k } \delta \dot{ q }_k \Big) dt = 0$$
+
+$$\delta \dot{ q }_k = \frac{ d }{ dt } \delta q_k$$
+
+$$\int_{t_1}^{t_2} \sum_k \frac{ \partial L }{ \partial \dot{ q }_k }  \frac{ d }{ dt } \delta q_k dt = \sum_k \frac{ \partial L }{ \partial \dot{ q }_k } \delta q_k \Big|_{t_1}^{t_2} - \int_{t_1}^{t_2} \sum_k \frac{ d }{ dt } \frac{ \partial L }{ \partial \dot{ q }_k } \delta q_k dt$$
+
+$$\delta \int_{t_1}^{t_2} L dt = \int_{t_1}^{t_2} \sum_k \Big[ \frac{ \partial L }{ \partial q_k } - \frac{ d }{ dt } \Big( \frac{ \partial L }{ \partial \dot{ q }_k } \Big) \Big] \delta q_k dt = 0$$
+
+$$\frac{ \partial L }{ \partial q_k } - \frac{ d }{ dt } \Big( \frac{ \partial L }{ \partial \dot{ q }_k } \Big) = 0$$
+
+This is just the same derivation as the variational calculus derivation.  All we're doing is trying to find the equations of motion that minimizes the Lagrangian.
+
+%
+%
+%
+\subsection{Derivation of the Lagrangian}
+
+I don't want you thinking that the Lagrangian ($L= T - V$) is just being pulled out of thin air.  It actually does come from a logical thing.  And we're going to borrow heavily from Goldstein Poole \& Safko.  We start with D'Alembert's principle.
+
+D'Alembert's principle is the simple statement that the forces of constraint do no work.  Or that the forces of constraint do not add or remove energy from the system.  This is true for all holonomic constraints and conservative forces.
+
+$$\Sigma_i \{ F^a_i - \dot{ p }_i \} \cdot \delta r_i = 0$$
+
+Now, before we can proceed, we need some useful equations relating positions, velocities, and forces in generalized coordinates.
+
+$$Q_j = \Sigma_i F_i \cdot \frac{ \partial r_i }{ \partial q_j }$$
+
+$$\delta r_i = \Sigma_j \frac{ \partial r_i }{ \partial q_j } \delta q_j$$
+
+$$v_i = \frac{ d r_i }{ dt } = \Sigma_k \frac{ \partial r_i }{ \partial q_k } \dot{ q }_k + \frac{ \partial r_i }{ \partial t }$$
+
+$$\frac{ d }{ dt } \Big( \frac{ \partial \mathbf{ r }_i }{ \partial q_j } \Big) = \frac{ \partial \dot{ \mathbf{ r } }_i }{ \partial q_j } = \frac{ \partial \mathbf{ v }_i }{ \partial q_j }$$
+
+$$\frac{ \partial \mathbf{ v }_i }{ \partial \dot{ q }_j } = \frac{ \partial \mathbf{ r }_i }{ \partial q_j }$$
+
+$$\Sigma_i \dot{ \mathbf{ p } }_i \cdot \delta \mathbf{ r }_i = \Sigma_i m_i \ddot{ \mathbf{ { r } } }_i \cdot \delta \mathbf{ r }_i = \Sigma_{ij} m_i \ddot{ \mathbf{ { r } } }_i \cdot \frac{ \partial \mathbf{ r }_i }{ \partial q_j } \delta q_j$$
+
+$$\Sigma_i m_i \ddot{ \mathbf{ r } }_i \cdot \frac{ \partial \mathbf{ r }_i }{ \partial q_j } = \Sigma_i \Big[ \frac{ d }{ dt } \Big( m_i \dot{ \mathbf{ r } }_i \cdot \frac{ \partial \mathbf{ r }_i }{ \partial q_j } \Big) - m_i \dot{ \mathbf{ r } }_i \cdot \frac{ d }{ dt } \Big( \frac{ \partial \mathbf{ r }_i }{ \partial q_j } \Big) \Big]$$
+
+$$ = \Sigma_i \Big[ \frac{ d }{ dt } \Big( m_i \mathbf{ v }_i \cdot \frac{ \partial \mathbf{ v }_i }{ \partial \dot{ q }_j } \Big) - m_i \mathbf{ v }_i \cdot \frac{ \partial \mathbf{ v }_i }{ \partial q_j } \Big]$$
+
+D'Alembert's principle can now be written as:
+
+$$\Sigma_{ij} \Big\{ \frac{ d }{ dt } \Big[ \frac{ \partial }{ \partial \dot{ q }_j  } \Big( \Sigma_i \frac{ 1 }{ 2 }m_i v_i^2 \Big) \Big] - \frac{ \partial }{ \partial q_j } \Big( \Sigma_i \frac{ 1 }{ 2 } m_i v_i^2 \Big) - Q_j \Big\} \delta q_j = 0$$
+
+Using T to represent the kinetic energy:
+
+$$\Sigma_j \Big\{ \frac{ d }{ dt } \frac{ \partial T }{ \partial \dot{ q }_j  } - \frac{ \partial T }{ \partial q_j } - Q_j \Big\} \delta q_j = 0$$
+
+Noting that the $q$'s are all independent of each other, we can drop the summation to get:
+
+$$\frac{ d }{ dt } \frac{ \partial T }{ \partial \dot{ q }_j  } - \frac{ \partial T }{ \partial q_j } = Q_j$$
+
+And finally, assuming that the forces we are dealing with are derivable from a scalar potential $V$, such that:
+
+$$Q_j = -\frac{ \partial V }{ \partial q_j }$$
+
+Then we get:
+
+$$\frac{ d }{ dt } \frac{ \partial T }{ \partial \dot{ q }_j  } - \frac{ \partial T }{ \partial q_j } = -\frac{ \partial V }{ \partial q_j }$$
+$$\frac{ d }{ dt } \frac{ \partial T }{ \partial \dot{ q }_j  } - \frac{ \partial T }{ \partial q_j } + \frac{ \partial V }{ \partial q_j } = 0$$
+$$\frac{ d }{ dt } \frac{ \partial T }{ \partial \dot{ q }_j  } - \frac{ \partial ( T - V ) }{ \partial q_j } = 0$$
+
+And if the potential is not dependent on the velocities.  Then its derivative with respect to the generalized velocities will be zero and we can write:
+
+$$\frac{ d }{ dt } \frac{ \partial ( T - V ) }{ \partial \dot{ q }_j  } - \frac{ \partial ( T - V ) }{ \partial q_j } = 0$$
+
+or
+
+$$\frac{ d }{ dt } \frac{ \partial L }{ \partial \dot{ q }_j  } - \frac{ \partial L }{ \partial q_j } = 0$$
+
+where $L$ is the Lagrangian:
+
+$$L = T - V$$
+
+%
+%
+%
+\subsection{Harmonic Oscillator Problem}
+
+$$L( x, \dot{ x } ) = T - V = \frac{ 1 }{ 2 } m \dot{ x }^2 - \frac{ 1 }{ 2 } k x^2$$
+
+$$\frac{ \partial L }{ \partial \dot{ x } } = m \dot{ x }$$
+$$\frac{ \partial L }{ \partial x } = - k x$$
+
+$$\frac{ \partial L }{ \partial q_k } - \frac{ d }{ dt } \Big( \frac{ \partial L }{ \partial \dot{ q }_k } \Big) = m \ddot{ x } + k x = 0$$
+
+%
+%
+%
+\subsection{Central Field Problem}
+
+%
+%
+%
+\subsection{Double Atwood Problem}
+
+%
+%
+%
+\subsection{Double Pendulum Problem}
+
+
+
+
+
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Forces of Constraint}
+
+Okay, so this is great.  We've figured out how to use the Lagrangian to derive the equations of motion and describe how the system evolves over time.  But what if we want to know the forces the constraint imparts onto the system?  Well, as it turns out we can express the forces of constraint with the following equation:
+
+\begin{equation}
+Q_i = \sum_{j=1}^k \lambda_j \frac{ \partial f_j }{ \partial q_i }
+\end{equation}
+
+Okay, great.  So what are the $\lambda$'s and the $f$'s?  Well, recall that we have a system with $k$ holonomic constraints:
+
+$$f_j( q_1, q_2, ..., q_n, t ) = 0$$
+
+And we also have the relationship of the Euler-Lagrange equation with the generalized forces:
+
+$$\frac{ \partial L }{ \partial q_i } - \frac{ d }{ dt } \Big( \frac{ \partial L }{ \partial \dot{ q }_i } \Big) = Q_i$$
+
+With the $n$ coordinates that we have, the $k$ constraint equations, then we have $n + k$ equations for the forces.  So we can use all these together to solve for the $\lambda$'s and find the forces of constraint.
+
+%
+%
+%
+\subsection{Derivation}
+
+Alright, we can't just pull stuff out of thin out air though.  Let's try and derive this.  I'm going to borrow heavily from Hamill's textbook.
+
+%
+%
+%
+\subsection{Example}
+
+This isn't exactly correct, we got some of the signs messed up.  TODO: really do it properly
+
+Imagine a disk rolling down a hill without slipping.  The slope has an angle of $\alpha$ with the respect to the x-axis.
+
+Inertia:
+$$I = \frac{ 1 }{ 2 } MR^2$$
+
+Kinetic Energy:
+$$T = \frac{ 1 }{ 2 }M\dot{ s }^2 + \frac{ 1 }{ 2 }I\dot{ \theta }^2$$
+
+Potential Energy:
+$$V = Mg( l - s )\sin{ \alpha }$$
+
+The constraint is rolling without slipping:
+$$f( s, \theta ) = s - R\theta = 0$$
+
+Plugging these into the constrained Euler-Lagrange equation:
+
+$$\frac{ \partial L }{ \partial s } - \frac{ d }{ dt } \Big( \frac{ \partial L }{ \partial \dot{ s } } \Big) = \lambda \frac{ \partial f }{ \partial s }$$
+$$\frac{ \partial L }{ \partial \theta } - \frac{ d }{ dt } \Big( \frac{ \partial L }{ \partial \dot{ \theta } } \Big) = \lambda \frac{ \partial f }{ \partial \theta }$$
+
+$$\frac{ \partial f }{ \partial s } = 1$$
+$$\frac{ \partial f }{ \partial \theta } = -R$$
+
+$$\frac{ \partial L }{ \partial s } = Mg\sin{ \alpha }$$
+$$\frac{ \partial L }{ \partial \theta } = 0$$
+
+$$\frac{ \partial L }{ \partial \dot{ s } } = M\dot{ s }$$
+$$\frac{ \partial L }{ \partial \dot{ \theta } } = I\dot{ \theta } = \frac{ 1 }{ 2 } MR^2 \dot{ \theta }$$
+
+Therefore we get:
+
+$$Mg\sin{ \alpha } - \frac{ d }{ dt }(M\dot{ s }) = \lambda$$
+$$\frac{ d }{ dt }(\frac{ 1 }{ 2 } MR^2 \dot{ \theta }) = -R\lambda$$
+
+Which gives:
+
+$$Mg\sin{ \alpha } - M\ddot{ s } = \lambda$$
+$$\frac{ 1 }{ 2 } MR^2 \ddot{ \theta } = -R\lambda$$
+
+From the constraint equation:
+
+$$\ddot{ \theta }R = \ddot{ s }$$
+
+And this gives:
+
+$$MR^2 \frac{ \ddot{ s } }{ R } = -2R\lambda$$
+$$M \ddot{ s } = -2\lambda$$
+
+Plug it into the other equation:
+
+$$Mg\sin{ \alpha } - 2\lambda = \lambda$$
+$$Mg\sin{ \alpha } = 3\lambda$$
+$$\lambda = \frac{ 1 }{ 3 }Mg\sin{ \alpha }$$
+
+This gives the forces:
+
+$$Q_s = -\frac{ 1 }{ 3 }Mg\sin{ \alpha }$$
+$$Q_\theta = \frac{ 1 }{ 3 }MgR\sin{ \alpha }$$
+
+And the equations of motion:
+
+$$\ddot{ s } = \frac{ 2 }{ 3 }g\sin{ \alpha }$$
+$$\ddot{ \theta }R = \frac{ 2 }{ 3 }g\sin{ \alpha }$$
+
+
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Legendre Transformation}
+
+Given function:
+
+$$f = f( u_1, u_2, ..., u_n )$$
+
+define variable $v_i$:
+
+$$v_i = \frac{ \partial f }{ \partial u_i }$$
+
+Then we can have a new function defined as:
+
+$$g = g( v_1, v_2, ..., v_n )$$
+
+s.t.:
+
+$$g = \sum_{i=1}^n u_i v_i - f$$
+
+%
+%	Chapter
+%
+\newpage
+\section{Hamiltonian Mechanics}
+
+The Hamiltonian is the Legendre transformation of the Lagrangian:
+
+\begin{equation}
+H = \sum_i \dot{ q }_i p_i - L
+\end{equation}
+
+And it is used in conjuction with Hamilton's canonical equations of motion:
+
+\begin{align}
+\frac{ \partial H }{ \partial p_k } = \dot{ q }_k\\
+\frac{ \partial H }{ \partial q_k } = -\dot{ p }_k
+\end{align}
+
+In the next section we're going to derive the equations of motion and the subsequent sections will be examples of their application.
+
+%
+%
+%
+\subsection{Derivation of Hamilton's canonical equations of motion}
+
+For simple dynamic systems the potential energy is a function of position only and the kinetic energy is a function of velocity and position:
+
+$$L = T( \dot{ q }_k, q_k ) - V( q_k )$$
+
+Now, Euler's theorem states that for a homogeneous function of degree n, then the sum:
+
+$$\sum_i x_i \frac{ \partial f }{ \partial x_i } = nf$$
+
+So then the sum in the Hamiltonian can be written as:
+
+$$\sum_i \dot{ q }_i p_i = \sum_i \dot{ q }_i \frac{ \partial L }{ \partial \dot{ q }_i } = \sum_i \dot{ q }_i \frac{ \partial T }{ \partial \dot{ q }_i } = 2T$$
+
+And therefore, for simple systems, the Hamiltonian can be written as:
+
+\begin{equation}
+H = \sum_i \dot{ q }_i p_i - L = 2T - ( T - V ) = T + V
+\end{equation}
+
+It is important to note that this is not true for all situations.  However, in practice, it comes up often enough to be worth studying.  Plus, when first diving into a subject, you usually want to work with the simpler examples.
+
+Next, let's recall that the velocity is a function of a position and momentum, and the momentum can be written as a differential of the Lagrangian:
+
+$$p_k = \frac{ \partial L }{ \partial \dot{ q }_k }$$
+
+$$\dot{ q }_k = \dot{ q }_k( p_k, q_k )$$
+
+Recalling that the full Hamiltonian is:
+
+$$H = \sum_i p_i \dot{ q }_i( p_k, q_k ) - L$$
+
+And now the variation gives:
+
+$$\delta H = \sum_k \big[ p_k \delta \dot{ q }_k + \dot{ q }_k \delta p_k - \frac{ \partial L }{ \partial \dot{ q }_k } \delta \dot{ q }_k - \frac{ \partial L }{ \partial q_k } \delta q_k \big]$$
+
+Using the relationship of momentum to the partial of the Lagrangian with respect to velocity, we can simplify the above result:
+
+$$\delta H = \sum_k \big[ \dot{ q }_k \delta p_k - \frac{ \partial L }{ \partial q_k } \delta q_k \big]$$
+$$ = \sum_k \big[ \dot{ q }_k \delta p_k - \dot{ p_k } \delta q_k \big]$$
+$$ = \sum_k \big[ \frac{ \partial H }{ \partial p_k } \delta p_k - \frac{ \partial H }{ \partial q_k } \delta q_k \big]$$
+
+Which yields Hamilton's canonical equations of motion:
+
+\begin{align}
+\frac{ \partial H }{ \partial p_k } = \dot{ q }_k\\
+\frac{ \partial H }{ \partial q_k } = -\dot{ p }_k
+\end{align}
+
+It should be noted that these are not better than Lagrange's equations.  They are equivalent, but sometimes it is more convenient to work with Hamilton's formulation than Lagrange's.
+
+Hamiltonians pop up in quantum mechanics a lot.  And so we should look at examples from classical mechanics that are also commonly studied in an undergraduate quantum mechanics course.
+
+%
+%
+%
+\subsection{Harmonic Oscillator Problem}
+
+$$T = \frac{ 1 }{ 2 } m \dot{ x }^2$$
+$$V = \frac{ 1 }{ 2 } K x^2$$
+$$p = \frac{ \partial L }{ \partial \dot{ x } } = m \dot{ x }$$
+$$\dot{ x } = \frac{ p }{ m }$$
+
+$$H = \dot{ x } p - L$$
+$$H = \dot{ x } p - \frac{ 1 }{ 2 } m \dot{ x }^2 + \frac{ 1 }{ 2 } K x^2$$
+$$H = \frac{ p^2 }{ m } - \frac{ 1 }{ 2 } \frac{ p^2 }{ m } + \frac{ 1 }{ 2 } K x^2$$
+$$H = \frac{ 1 }{ 2 } \frac{ p^2 }{ m } + \frac{ 1 }{ 2 } K x^2$$
+
+$$\frac{ \partial H }{ \partial p } = \dot{ x }$$
+$$\frac{ \partial H }{ \partial x } = -\dot{ p }$$
+
+$$\frac{ p }{ m } = \dot{ x }$$
+$$K x = -\dot{ p }$$
+
+$$K x = -\frac{ d }{ dt }( m \dot{ x } )$$
+$$m \ddot{ x } + Kx = 0$$
+
+%
+%
+%
+\subsection{Central Field Problem}
+
+%
+%
+%
+\subsection{Double Atwood Problem}
+
+%
+%
+%
+\subsection{Double Pendulum Problem}
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Canonical Transforms/Poisson Brackets}
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Hamilton-Jacobi Theory}
+
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Wave Mechanics}
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Orbital Mechanics}
+
+
+%
+%	Chapter
+%
+\newpage
+\section{Scattering}
+
+
+
+
+
+
+
+
+
+
+
+%\begin{center}
+%  \includegraphics[width=0.5\linewidth]{images/demo_final.jpg}
+%  \captionof{figure}{final}
+%  \label{fig:demo_final}
+%\end{center}
+
+%
+%	Chapter
+%
+\newpage
+\section{Further Reading \& References}
+
+\noindent
+“Classical Mechanics” - Goldstein, Poole, Safko\\
+
+\noindent
+“A Student's Guide to Lagrangians and Hamiltonians” - Patrick Hamill\\
+
+\noindent
+“Analytical Mechanics” - Fowles, Cassiday\\
+
+\noindent
+"Calculus of Variations" - I.M. Gelfand, S.V. Fomin\\
+
+\noindent
+"Calculus" - James Stewart\\
+
+
+
+\end{document}
